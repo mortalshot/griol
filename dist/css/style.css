@@ -832,7 +832,7 @@ video {
   align-items: center
 }
 .header.header_transparent {
-  background-color: transparent
+  background: linear-gradient(180deg,rgba(0,0,0,.4) 0,rgba(0,0,0,0) 100%)
 }
 .header.header_transparent .header-menu__item > a {
   color: #fff
@@ -849,7 +849,7 @@ video {
 ._catalog-show .header,
 ._search-show .header,
 .menu-open .header {
-  background-color: #fff
+  background: #fff
 }
 ._catalog-show .header .header-menu__item > a,
 ._search-show .header .header-menu__item > a,
@@ -1880,6 +1880,17 @@ a.logo__link {
 .subscribe__note {
   opacity: .8
 }
+#subscribe-modal {
+  width: 100%;
+  max-width: 77.125rem;
+  padding: 0;
+  background: 0 0
+}
+#subscribe-modal .fancybox-close-small svg {
+  stroke: #fff;
+  opacity: 1;
+  transition: .3s ease transform 0s
+}
 .single-product__container {
   min-width: .0625rem
 }
@@ -2066,8 +2077,9 @@ a.logo__link {
 .product-heading {
   display: flex;
   align-items: center;
+  width: 100%;
   padding: .375rem 0;
-  position: sticky;
+  position: fixed;
   z-index: 4;
   top: 0;
   transition: .3s ease background-color 0s
@@ -2075,17 +2087,19 @@ a.logo__link {
 .product-heading.product-heading_bg {
   background-color: #fff
 }
-.product-heading.scrolled-past-name .product-heading__center {
-  opacity: 1
-}
 .product-heading__left {
   flex: 0 1 30%
 }
 .product-heading__center {
   flex: 1 0 70%;
-  text-align: center;
+  text-align: center
+}
+.product-heading__center .single-product__name {
   opacity: 0;
   transition: .3s ease opacity 0s
+}
+.product-heading__center .single-product__name._show {
+  opacity: 1
 }
 .product-heading__right {
   flex: 0 1 30%;
@@ -2662,6 +2676,12 @@ body::after {
   }
   .single-product__slide {
     aspect-ratio: 558/832
+  }
+  .single-product__info {
+    position: sticky;
+    top: var(--header-height);
+    overflow-y: auto;
+    overflow-x: hidden
   }
   .single-product__art:not(:last-child) {
     margin-bottom: .25rem
@@ -4047,6 +4067,9 @@ body::after {
   .header_transparent .icon-menu button::before {
     background-color: #fff
   }
+  ._search-show .icon-menu button span,
+  ._search-show .icon-menu button::after,
+  ._search-show .icon-menu button::before,
   .menu-open .icon-menu button span,
   .menu-open .icon-menu button::after,
   .menu-open .icon-menu button::before {
@@ -5365,6 +5388,12 @@ body::after {
   .subscribe__privacy a:hover {
     -webkit-text-decoration: underline transparent from-font;
     text-decoration: underline transparent from-font
+  }
+  #subscribe-modal .fancybox-close-small {
+    transition: .3s ease opacity 0s
+  }
+  #subscribe-modal .fancybox-close-small:hover {
+    opacity: .8
   }
   .single-product__slide a {
     transition: .3s ease opacity 0s

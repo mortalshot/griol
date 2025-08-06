@@ -485,17 +485,6 @@
     }
     const da = new DynamicAdapt("max");
     da.init();
-    function initTransparentHeaderScrollToggle() {
-        const header = document.querySelector(".header");
-        const topline = document.querySelector(".topline");
-        if (!header || !header.classList.contains("header_transparent")) return;
-        document.body.addEventListener("scroll", (() => {
-            const headerTop = header.getBoundingClientRect().top;
-            const toplineBottom = topline.getBoundingClientRect().bottom;
-            if (headerTop <= toplineBottom) header.classList.add("header_transparent"); else header.classList.remove("header_transparent");
-        }));
-    }
-    document.addEventListener("DOMContentLoaded", initTransparentHeaderScrollToggle);
     function updateHeaderOffset({saveInitial = false} = {}) {
         const header = document.querySelector(".header");
         if (!header) return;
@@ -909,30 +898,50 @@
             if (!gallery) return;
             let startY = 0;
             let startX = 0;
+            let lastY = 0;
             let isVerticalScroll = null;
+            let velocity = 0;
+            let lastMoveTime = 0;
+            let inertiaFrame;
             gallery.addEventListener("touchstart", (e => {
                 if (e.touches.length !== 1) return;
-                startY = e.touches[0].clientY;
+                startY = lastY = e.touches[0].clientY;
                 startX = e.touches[0].clientX;
                 isVerticalScroll = null;
+                velocity = 0;
+                cancelAnimationFrame(inertiaFrame);
+                lastMoveTime = Date.now();
             }));
             gallery.addEventListener("touchmove", (e => {
                 if (e.touches.length !== 1) return;
                 const currentY = e.touches[0].clientY;
                 const currentX = e.touches[0].clientX;
-                let diffY = currentY - startY;
                 const diffX = currentX - startX;
+                const diffY = currentY - lastY;
                 if (isVerticalScroll === null) isVerticalScroll = Math.abs(diffY) > Math.abs(diffX);
                 if (isVerticalScroll) {
                     e.preventDefault();
-                    diffY *= .6;
-                    document.body.scrollTop -= diffY;
-                    document.body.scrollBy?.(0, -diffY);
-                    startY = currentY;
+                    const now = Date.now();
+                    const dt = now - lastMoveTime || 16;
+                    velocity = -diffY / dt * 20;
+                    document.body.scrollTop += velocity;
+                    lastY = currentY;
+                    lastMoveTime = now;
                 } else e.preventDefault();
             }), {
                 passive: false
             });
+            gallery.addEventListener("touchend", (() => {
+                if (!isVerticalScroll || Math.abs(velocity) < .5) return;
+                const friction = .95;
+                function inertiaStep() {
+                    if (Math.abs(velocity) < .1) return;
+                    document.body.scrollBy(0, velocity);
+                    velocity *= friction;
+                    inertiaFrame = requestAnimationFrame(inertiaStep);
+                }
+                inertiaStep();
+            }));
         }
         initGallerySwipeScroll();
         window.addEventListener("resize", initGallerySwipeScroll);
@@ -1051,7 +1060,7 @@
             }
             if (productName) {
                 const nameRect = productName.getBoundingClientRect();
-                if (nameRect.top <= 0) heading.classList.add("scrolled-past-name"); else heading.classList.remove("scrolled-past-name");
+                if (nameRect.top <= 0) heading.querySelector(".single-product__name").classList.add("_show"); else heading.querySelector(".single-product__name").classList.remove("_show");
             }
         };
         document.body.addEventListener("scroll", checkIntersection);
@@ -1082,6 +1091,18 @@
     }
     window.addEventListener("DOMContentLoaded", initMobileOnlyProductWatchers);
     window.addEventListener("resize", initMobileOnlyProductWatchers);
+    window.addEventListener("DOMContentLoaded", (function() {
+        $(document).ready((function() {
+            const hash = window.location.hash;
+            if (hash && $(hash).length) $.fancybox.open({
+                src: hash,
+                type: "inline",
+                afterClose: function() {
+                    if (history.replaceState) history.replaceState(null, null, window.location.pathname + window.location.search);
+                }
+            });
+        }));
+    }));
     window["FLS"] = true;
     menuInit();
     spollers();
