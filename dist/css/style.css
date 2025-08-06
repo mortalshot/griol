@@ -856,6 +856,11 @@ video {
 .menu-open .header .header-menu__item > a {
   color: #000
 }
+._catalog-show .header .header-catalog__toggle,
+._search-show .header .header-catalog__toggle,
+.menu-open .header .header-catalog__toggle {
+  fill: #000
+}
 ._catalog-show .header .logo svg,
 ._search-show .header .logo svg,
 .menu-open .header .logo svg {
@@ -1718,7 +1723,8 @@ a.logo__link {
   -webkit-transform-origin: 50% 16%;
   transform-origin: 50% 16%;
   transition: 1s ease all 0s;
-  will-change: transform
+  will-change: transform;
+  z-index: -1
 }
 .product-card__label {
   font-weight: 500;
