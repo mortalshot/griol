@@ -704,12 +704,13 @@
                 if (!slider) return;
                 let isInitialized = false;
                 const updateArrows = slick => {
+                    if (!slick.$slider.is(slider)) return;
                     const current = slick.currentSlide;
                     const total = slick.slideCount;
                     const toShow = slick.options.slidesToShow;
                     const isBeginning = current === 0;
                     const isEnd = current >= total - toShow;
-                    const shouldHideArrows = total <= toShow;
+                    const shouldHideArrows = Math.ceil(total) <= Math.ceil(toShow);
                     prevBtn?.classList.toggle("_disabled", isBeginning);
                     nextBtn?.classList.toggle("_disabled", isEnd);
                     if (shouldHideArrows) {
@@ -946,7 +947,47 @@
         initGallerySwipeScroll();
         window.addEventListener("resize", initGallerySwipeScroll);
     }
-    window.addEventListener("DOMContentLoaded", initSliders);
+    function initInnerPreviewSliders() {
+        const previewSliders = document.querySelectorAll(".preview-slider");
+        previewSliders.forEach((slider => {
+            if ($(slider).hasClass("slick-initialized")) return;
+            $(slider).slick({
+                slidesToShow: 1,
+                infinite: false,
+                arrows: false,
+                dots: true,
+                swipe: false,
+                fade: true,
+                speed: 100
+            });
+            const slickInstance = $(slider).slick("getSlick");
+            const slideCount = slickInstance.slideCount;
+            let lastIndex = null;
+            slider.addEventListener("mousemove", (function(e) {
+                const rect = slider.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const width = rect.width;
+                const segmentWidth = width / slideCount;
+                let index = Math.floor(x / segmentWidth);
+                index = Math.max(0, Math.min(index, slideCount - 1));
+                if (index !== lastIndex) {
+                    $(slider).slick("slickGoTo", index);
+                    lastIndex = index;
+                }
+            }));
+            slider.addEventListener("mouseleave", (function() {
+                lastIndex = null;
+            }));
+            $(slider).on("mouseenter", ".slick-dots li", (function() {
+                const dotIndex = $(this).index();
+                $(slider).slick("slickGoTo", dotIndex);
+            }));
+        }));
+    }
+    window.addEventListener("DOMContentLoaded", (() => {
+        initSliders();
+        initInnerPreviewSliders();
+    }));
     function initTagshotToggles() {
         const toggles = document.querySelectorAll(".tagshot__toggle");
         toggles.forEach((toggle => {
