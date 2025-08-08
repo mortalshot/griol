@@ -508,8 +508,30 @@
         if (!header) return;
         const height = header.offsetHeight;
         document.documentElement.style.setProperty("--header-height", `${height}px`);
+        window.headerHeight = height;
     }
-    window.addEventListener("DOMContentLoaded", updateHeaderHeightVar);
+    window.addEventListener("DOMContentLoaded", (() => {
+        updateHeaderHeightVar();
+        const stickyInstance = new hcSticky(".single-product__info", {
+            stickTo: ".single-product",
+            top: window.headerHeight || 0,
+            bottomEnd: 0,
+            responsive: {
+                0: {
+                    disable: true
+                },
+                1024: {
+                    disable: false
+                }
+            }
+        });
+        const spollerItems = document.querySelectorAll(".single-product .spollers__item");
+        if (spollerItems.length > 0) spollerItems.forEach((element => {
+            element.addEventListener("click", (function() {
+                stickyInstance.update();
+            }));
+        }));
+    }));
     window.addEventListener("resize", updateHeaderHeightVar);
     const catalogItems = document.querySelectorAll(".header-catalog");
     const html = document.documentElement;
@@ -810,6 +832,7 @@
             sliderSelector: ".widget-products__slider",
             slickSettings: {
                 slidesToShow: 3,
+                useTransform: window.innerWidth > 767.98,
                 responsive: [ {
                     breakpoint: 767.98,
                     settings: {
@@ -861,6 +884,7 @@
             sliderSelector: ".widget-featured__slider",
             slickSettings: {
                 slidesToShow: 4,
+                useTransform: window.innerWidth > 767.98,
                 responsive: [ {
                     breakpoint: 992,
                     settings: {
