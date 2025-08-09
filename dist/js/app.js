@@ -485,6 +485,420 @@
     }
     const da = new DynamicAdapt("max");
     da.init();
+    (function(global, factory) {
+        if (typeof module === "object" && typeof module.exports === "object") if (global.document) module.exports = factory(global); else throw new Error("HC-Sticky requires a browser to run."); else if (typeof define === "function" && define.amd) define("hcSticky", [], factory(global)); else factory(global);
+    })(typeof window !== "undefined" ? window : void 0, (window => {
+        const document = window.document;
+        const DEFAULT_OPTIONS = {
+            top: 0,
+            bottom: 0,
+            bottomEnd: 0,
+            innerTop: 0,
+            innerSticker: null,
+            stickyClass: "sticky",
+            stickTo: null,
+            followScroll: true,
+            responsive: null,
+            mobileFirst: false,
+            onStart: null,
+            onStop: null,
+            onBeforeResize: null,
+            onResize: null,
+            resizeDebounce: 100,
+            disable: false
+        };
+        const deprecated = (() => {
+            const pluginName = "HC Sticky";
+            return (what, instead, type) => {
+                console.warn("%c" + pluginName + ":" + "%c " + type + "%c '" + what + "'" + "%c is now deprecated and will be removed. Use" + "%c '" + instead + "'" + "%c instead.", "color: #fa253b", "color: default", "color: #5595c6", "color: default", "color: #5595c6", "color: default");
+            };
+        })();
+        const hcSticky = function(elem, userSettings) {
+            userSettings = userSettings || {};
+            if (typeof elem === "string") elem = document.querySelector(elem);
+            if (!elem) return false;
+            if (userSettings.queries) deprecated("queries", "responsive", "option");
+            if (userSettings.queryFlow) deprecated("queryFlow", "mobileFirst", "option");
+            let STICKY_OPTIONS = {};
+            if (!hcSticky.Helpers) hcSticky.Helpers = {
+                getStyle(el, prop) {
+                    const cs = window.getComputedStyle ? window.getComputedStyle(el, null) : el.currentStyle || {};
+                    return prop ? cs.getPropertyValue ? cs.getPropertyValue(prop) : cs[prop] : cs;
+                },
+                getCascadedStyle(el) {
+                    const s = this.getStyle(el);
+                    return {
+                        left: s.left || el.style.left || "auto",
+                        right: s.right || el.style.right || "auto",
+                        top: s.top || el.style.top || "auto",
+                        bottom: s.bottom || el.style.bottom || "auto",
+                        width: s.width || el.style.width || "auto",
+                        marginLeft: s.marginLeft || "0px",
+                        marginRight: s.marginRight || "0px",
+                        marginTop: s.marginTop || "0px",
+                        marginBottom: s.marginBottom || "0px",
+                        paddingLeft: s.paddingLeft || "0px",
+                        paddingRight: s.paddingRight || "0px",
+                        cssFloat: s.cssFloat || s.float || ""
+                    };
+                },
+                hasClass(el, cn) {
+                    return el.classList ? el.classList.contains(cn) : new RegExp("(^|\\b)" + cn.split(" ").join("|") + "(\\b|$)").test(el.className);
+                },
+                offset(el) {
+                    const r = el.getBoundingClientRect();
+                    const sl = window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0;
+                    const st = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+                    return {
+                        top: r.top + st,
+                        left: r.left + sl
+                    };
+                },
+                position(el) {
+                    return {
+                        top: el.offsetTop,
+                        left: el.offsetLeft
+                    };
+                },
+                getElement(sel) {
+                    if (!sel) return null;
+                    if (typeof sel === "string") return document.querySelector(sel);
+                    if (sel && sel.nodeType) return sel;
+                    return null;
+                },
+                isEmptyObject(obj) {
+                    for (const k in obj) return false;
+                    return true;
+                },
+                supportsPassive: false,
+                debounce(fn, wait) {
+                    let t;
+                    return function() {
+                        clearTimeout(t);
+                        t = setTimeout((() => fn.apply(this, arguments)), wait);
+                    };
+                }
+            };
+            const Helpers = hcSticky.Helpers;
+            const elemParent = elem.parentNode;
+            if (Helpers.getStyle(elemParent, "position") === "static") elemParent.style.position = "relative";
+            const setOptions = options => {
+                options = options || {};
+                if (Helpers.isEmptyObject(options) && !Helpers.isEmptyObject(STICKY_OPTIONS)) return;
+                STICKY_OPTIONS = Object.assign({}, DEFAULT_OPTIONS, STICKY_OPTIONS, options);
+            };
+            const resetOptions = options => {
+                STICKY_OPTIONS = Object.assign({}, DEFAULT_OPTIONS, options || {});
+            };
+            const getOptions = option => option ? STICKY_OPTIONS[option] : Object.assign({}, STICKY_OPTIONS);
+            const isDisabled = () => STICKY_OPTIONS.disable;
+            const applyQueries = () => {
+                const mediaQueries = STICKY_OPTIONS.responsive || STICKY_OPTIONS.queries;
+                if (mediaQueries) {
+                    const window_width = window.innerWidth;
+                    resetOptions(userSettings);
+                    if (STICKY_OPTIONS.mobileFirst) {
+                        for (const width in mediaQueries) if (window_width >= width && !Helpers.isEmptyObject(mediaQueries[width])) setOptions(mediaQueries[width]);
+                    } else {
+                        const queriesArr = [];
+                        for (const b in mediaQueries) {
+                            const q = {};
+                            q[b] = mediaQueries[b];
+                            queriesArr.push(q);
+                        }
+                        for (let i = queriesArr.length - 1; i >= 0; i--) {
+                            const query = queriesArr[i];
+                            const breakpoint = Object.keys(query)[0];
+                            if (window_width <= breakpoint && !Helpers.isEmptyObject(query[breakpoint])) setOptions(query[breakpoint]);
+                        }
+                    }
+                }
+            };
+            const getStickyCss = el => {
+                const cascadedStyle = Helpers.getCascadedStyle(el);
+                const computedStyle = Helpers.getStyle(el);
+                const css = {
+                    height: el.offsetHeight + "px",
+                    left: cascadedStyle.left,
+                    right: cascadedStyle.right,
+                    top: cascadedStyle.top,
+                    bottom: cascadedStyle.bottom,
+                    position: computedStyle.position,
+                    display: computedStyle.display,
+                    verticalAlign: computedStyle.verticalAlign,
+                    boxSizing: computedStyle.boxSizing,
+                    marginLeft: cascadedStyle.marginLeft,
+                    marginRight: cascadedStyle.marginRight,
+                    marginTop: cascadedStyle.marginTop,
+                    marginBottom: cascadedStyle.marginBottom,
+                    paddingLeft: cascadedStyle.paddingLeft,
+                    paddingRight: cascadedStyle.paddingRight
+                };
+                if (cascadedStyle["float"]) css["float"] = cascadedStyle["float"] || "none";
+                if (cascadedStyle.cssFloat) css["cssFloat"] = cascadedStyle.cssFloat || "none";
+                if (computedStyle.MozBoxSizing) css["MozBoxSizing"] = computedStyle.MozBoxSizing;
+                css["width"] = cascadedStyle.width !== "auto" ? cascadedStyle.width : css.boxSizing === "border-box" || css.MozBoxSizing === "border-box" ? el.offsetWidth + "px" : computedStyle.width;
+                return css;
+            };
+            const Sticky = {
+                css: {},
+                position: null,
+                stick: args => {
+                    args = args || {};
+                    if (Helpers.hasClass(elem, STICKY_OPTIONS.stickyClass)) return;
+                    if (Spacer.isAttached === false) Spacer.attach();
+                    Sticky.position = "fixed";
+                    elem.style.position = "fixed";
+                    elem.style.left = Spacer.offsetLeft + "px";
+                    elem.style.width = Spacer.width;
+                    if (typeof args.bottom === "undefined") elem.style.bottom = "auto"; else elem.style.bottom = args.bottom + "px";
+                    if (typeof args.top === "undefined") elem.style.top = "auto"; else elem.style.top = args.top + "px";
+                    if (elem.classList) elem.classList.add(STICKY_OPTIONS.stickyClass); else elem.className += " " + STICKY_OPTIONS.stickyClass;
+                    if (STICKY_OPTIONS.onStart) STICKY_OPTIONS.onStart.call(elem, Object.assign({}, STICKY_OPTIONS));
+                },
+                release: args => {
+                    args = args || {};
+                    args.stop = args.stop || false;
+                    if (args.stop !== true && Sticky.position !== "fixed" && Sticky.position !== null && (typeof args.top === "undefined" && typeof args.bottom === "undefined" || typeof args.top !== "undefined" && (parseInt(Helpers.getStyle(elem, "top")) || 0) === args.top || typeof args.bottom !== "undefined" && (parseInt(Helpers.getStyle(elem, "bottom")) || 0) === args.bottom)) return;
+                    if (args.stop === true) {
+                        if (Spacer.isAttached === true) Spacer.detach();
+                    } else if (Spacer.isAttached === false) Spacer.attach();
+                    const position = args.position || Sticky.css.position;
+                    Sticky.position = position;
+                    elem.style.position = position;
+                    elem.style.left = args.stop === true ? Sticky.css.left : Spacer.positionLeft + "px";
+                    elem.style.width = position !== "absolute" ? Sticky.css.width : Spacer.width;
+                    if (typeof args.bottom === "undefined") elem.style.bottom = args.stop === true ? "" : "auto"; else elem.style.bottom = args.bottom + "px";
+                    if (typeof args.top === "undefined") elem.style.top = args.stop === true ? "" : "auto"; else elem.style.top = args.top + "px";
+                    if (elem.classList) elem.classList.remove(STICKY_OPTIONS.stickyClass); else elem.className = elem.className.replace(new RegExp("(^|\\b)" + STICKY_OPTIONS.stickyClass.split(" ").join("|") + "(\\b|$)", "gi"), " ");
+                    if (STICKY_OPTIONS.onStop) STICKY_OPTIONS.onStop.call(elem, Object.assign({}, STICKY_OPTIONS));
+                }
+            };
+            const Spacer = {
+                el: document.createElement("div"),
+                offsetLeft: null,
+                positionLeft: null,
+                width: null,
+                isAttached: false,
+                init: () => {
+                    Spacer.el.className = "sticky-spacer";
+                    for (const prop in Sticky.css) Spacer.el.style[prop] = Sticky.css[prop];
+                    Spacer.el.style["z-index"] = "-1";
+                    const elemStyle = Helpers.getStyle(elem);
+                    Spacer.offsetLeft = Helpers.offset(elem).left - (parseInt(elemStyle.marginLeft) || 0);
+                    Spacer.positionLeft = Helpers.position(elem).left;
+                    Spacer.width = Helpers.getStyle(elem, "width");
+                },
+                attach: () => {
+                    elemParent.insertBefore(Spacer.el, elem);
+                    Spacer.isAttached = true;
+                },
+                detach: () => {
+                    Spacer.el = elemParent.removeChild(Spacer.el);
+                    Spacer.isAttached = false;
+                }
+            };
+            let stickTo_document;
+            let container;
+            let inner_sticker;
+            let container_height;
+            let container_offsetTop;
+            let elemParent_offsetTop;
+            let window_height;
+            let options_top;
+            let options_bottom;
+            let stick_top;
+            let stick_bottom;
+            let top_limit;
+            let bottom_limit;
+            let largerSticky;
+            let sticky_height;
+            let sticky_offsetTop;
+            let calcContainerHeight;
+            let calcStickyHeight;
+            const calcSticky = () => {
+                Sticky.css = getStickyCss(elem);
+                Spacer.init();
+                stickTo_document = STICKY_OPTIONS.stickTo && (STICKY_OPTIONS.stickTo === "document" || STICKY_OPTIONS.stickTo.nodeType && STICKY_OPTIONS.stickTo.nodeType === 9 || typeof STICKY_OPTIONS.stickTo === "object" && STICKY_OPTIONS.stickTo instanceof (typeof HTMLDocument !== "undefined" ? HTMLDocument : Document)) ? true : false;
+                container = STICKY_OPTIONS.stickTo ? stickTo_document ? document : Helpers.getElement(STICKY_OPTIONS.stickTo) : elemParent;
+                calcStickyHeight = () => {
+                    const height = elem.offsetHeight + (parseInt(Sticky.css.marginTop) || 0) + (parseInt(Sticky.css.marginBottom) || 0);
+                    const h_diff = (sticky_height || 0) - height;
+                    if (h_diff >= -1 && h_diff <= 1) return sticky_height; else return height;
+                };
+                sticky_height = calcStickyHeight();
+                calcContainerHeight = () => !stickTo_document ? container.offsetHeight : Math.max(document.documentElement.clientHeight, document.body.scrollHeight, document.documentElement.scrollHeight, document.body.offsetHeight, document.documentElement.offsetHeight);
+                container_height = calcContainerHeight();
+                container_offsetTop = !stickTo_document ? Helpers.offset(container).top : 0;
+                elemParent_offsetTop = !STICKY_OPTIONS.stickTo ? container_offsetTop : !stickTo_document ? Helpers.offset(elemParent).top : 0;
+                window_height = window.innerHeight;
+                sticky_offsetTop = elem.offsetTop - (parseInt(Sticky.css.marginTop) || 0);
+                inner_sticker = Helpers.getElement(STICKY_OPTIONS.innerSticker);
+                options_top = isNaN(STICKY_OPTIONS.top) && STICKY_OPTIONS.top.indexOf("%") > -1 ? parseFloat(STICKY_OPTIONS.top) / 100 * window_height : STICKY_OPTIONS.top;
+                options_bottom = isNaN(STICKY_OPTIONS.bottom) && STICKY_OPTIONS.bottom.indexOf("%") > -1 ? parseFloat(STICKY_OPTIONS.bottom) / 100 * window_height : STICKY_OPTIONS.bottom;
+                stick_top = inner_sticker ? inner_sticker.offsetTop : STICKY_OPTIONS.innerTop ? STICKY_OPTIONS.innerTop : 0;
+                stick_bottom = isNaN(STICKY_OPTIONS.bottomEnd) && STICKY_OPTIONS.bottomEnd.indexOf("%") > -1 ? parseFloat(STICKY_OPTIONS.bottomEnd) / 100 * window_height : STICKY_OPTIONS.bottomEnd;
+                top_limit = container_offsetTop - options_top + stick_top + sticky_offsetTop;
+            };
+            let last_pos = window.pageYOffset || document.documentElement.scrollTop;
+            let diff_y = 0;
+            let scroll_dir;
+            const runSticky = () => {
+                sticky_height = calcStickyHeight();
+                container_height = calcContainerHeight();
+                bottom_limit = container_offsetTop + container_height - options_top - stick_bottom;
+                largerSticky = sticky_height > window_height;
+                const specialRange = window_height >= sticky_height && window_height <= sticky_height + options_top;
+                const largerOrSpecial = largerSticky || specialRange;
+                const offset_top = window.pageYOffset || document.documentElement.scrollTop;
+                const sticky_top = Helpers.offset(elem).top;
+                const sticky_window_top = sticky_top - offset_top;
+                let bottom_distance;
+                scroll_dir = offset_top < last_pos ? "up" : "down";
+                diff_y = offset_top - last_pos;
+                last_pos = offset_top;
+                if (offset_top > top_limit) if (bottom_limit + options_top + (largerOrSpecial ? options_bottom : 0) - (STICKY_OPTIONS.followScroll && largerOrSpecial ? 0 : options_top) <= offset_top + sticky_height - stick_top - (sticky_height - stick_top > window_height - (top_limit - stick_top) && STICKY_OPTIONS.followScroll ? (bottom_distance = sticky_height - window_height - stick_top) > 0 ? bottom_distance : 0 : 0)) Sticky.release({
+                    position: "absolute",
+                    bottom: elemParent_offsetTop + elemParent.offsetHeight - bottom_limit - options_top
+                }); else if (largerOrSpecial && STICKY_OPTIONS.followScroll) if (scroll_dir === "down") {
+                    if (sticky_window_top + sticky_height + options_bottom <= window_height + .9) Sticky.stick({
+                        bottom: options_bottom
+                    }); else if (Sticky.position === "fixed") Sticky.release({
+                        position: "absolute",
+                        top: sticky_top - options_top - top_limit - diff_y + stick_top
+                    });
+                } else {
+                    if (Sticky.position === "fixed" && elem.style.bottom !== "auto") Sticky.release({
+                        position: "absolute",
+                        top: sticky_top - options_top - top_limit + stick_top - diff_y
+                    });
+                    if (Math.ceil(sticky_window_top + stick_top) < 0 && Sticky.position === "fixed") Sticky.release({
+                        position: "absolute",
+                        top: sticky_top - options_top - top_limit + stick_top - diff_y
+                    }); else if (sticky_top >= offset_top + options_top - stick_top) Sticky.stick({
+                        top: options_top - stick_top
+                    });
+                } else Sticky.stick({
+                    top: options_top - stick_top
+                }); else Sticky.release({
+                    stop: true
+                });
+            };
+            let scrollAttached = false;
+            let resizeAttached = false;
+            const disableSticky = () => {
+                if (scrollAttached) {
+                    window.removeEventListener("scroll", runSticky, Helpers.supportsPassive);
+                    scrollAttached = false;
+                }
+            };
+            const initSticky = () => {
+                if (elem.offsetParent === null || Helpers.getStyle(elem, "display") === "none") {
+                    disableSticky();
+                    return;
+                }
+                calcSticky();
+                if (sticky_height > container_height) {
+                    disableSticky();
+                    return;
+                }
+                runSticky();
+                if (!scrollAttached) {
+                    window.addEventListener("scroll", runSticky, Helpers.supportsPassive);
+                    scrollAttached = true;
+                }
+            };
+            const resetSticky = () => {
+                elem.style.position = "";
+                elem.style.left = "";
+                elem.style.top = "";
+                elem.style.bottom = "";
+                elem.style.width = "";
+                if (elem.classList) elem.classList.remove(STICKY_OPTIONS.stickyClass); else elem.className = elem.className.replace(new RegExp("(^|\\b)" + STICKY_OPTIONS.stickyClass.split(" ").join("|") + "(\\b|$)", "gi"), " ");
+                Sticky.css = {};
+                Sticky.position = null;
+                if (Spacer.isAttached === true) Spacer.detach();
+            };
+            const reinitSticky = () => {
+                resetSticky();
+                applyQueries();
+                if (isDisabled()) {
+                    disableSticky();
+                    return;
+                }
+                initSticky();
+            };
+            const resizeSticky = () => {
+                if (STICKY_OPTIONS.onBeforeResize) STICKY_OPTIONS.onBeforeResize.call(elem, Object.assign({}, STICKY_OPTIONS));
+                reinitSticky();
+                if (STICKY_OPTIONS.onResize) STICKY_OPTIONS.onResize.call(elem, Object.assign({}, STICKY_OPTIONS));
+            };
+            const resize_cb = !STICKY_OPTIONS.resizeDebounce ? resizeSticky : Helpers.debounce(resizeSticky, STICKY_OPTIONS.resizeDebounce);
+            const Update = options => {
+                setOptions(options);
+                userSettings = Object.assign({}, userSettings, options || {});
+                reinitSticky();
+            };
+            const Detach = () => {
+                if (resizeAttached) {
+                    window.removeEventListener("resize", resize_cb, Helpers.supportsPassive);
+                    resizeAttached = false;
+                }
+                disableSticky();
+            };
+            const Destroy = () => {
+                Detach();
+                resetSticky();
+            };
+            const Attach = () => {
+                if (!resizeAttached) {
+                    window.addEventListener("resize", resize_cb, Helpers.supportsPassive);
+                    resizeAttached = true;
+                }
+                applyQueries();
+                if (isDisabled()) {
+                    disableSticky();
+                    return;
+                }
+                initSticky();
+            };
+            this.options = getOptions;
+            this.refresh = reinitSticky;
+            this.update = Update;
+            this.attach = Attach;
+            this.detach = Detach;
+            this.destroy = Destroy;
+            this.triggerMethod = (method, options) => {
+                if (typeof this[method] === "function") this[method](options);
+            };
+            this.reinit = () => {
+                deprecated("reinit", "refresh", "method");
+                reinitSticky();
+            };
+            setOptions(userSettings);
+            Attach();
+            window.addEventListener("load", reinitSticky);
+        };
+        if (typeof window.jQuery !== "undefined") {
+            const $ = window.jQuery;
+            const namespace = "hcSticky";
+            $.fn.extend({
+                hcSticky: function(args, update) {
+                    if (!this.length) return this;
+                    if (args === "options") return $.data(this.get(0), namespace).options();
+                    return this.each((function() {
+                        let instance = $.data(this, namespace);
+                        if (instance) instance.triggerMethod(args, update); else {
+                            instance = new hcSticky(this, args);
+                            $.data(this, namespace, instance);
+                        }
+                    }));
+                }
+            });
+        }
+        window.hcSticky = window.hcSticky || hcSticky;
+        return hcSticky;
+    }));
     function updateHeaderOffset({saveInitial = false} = {}) {
         const header = document.querySelector(".header");
         if (!header) return;
@@ -510,29 +924,25 @@
         document.documentElement.style.setProperty("--header-height", `${height}px`);
         window.headerHeight = height;
     }
-    window.addEventListener("DOMContentLoaded", (() => {
-        updateHeaderHeightVar();
-        const stickyInstance = new hcSticky(".single-product__info", {
+    window.addEventListener("DOMContentLoaded", updateHeaderHeightVar);
+    window.addEventListener("load", updateHeaderHeightVar);
+    window.addEventListener("resize", updateHeaderHeightVar);
+    document.addEventListener("DOMContentLoaded", (() => {
+        const sidebar = document.querySelector(".single-product__info");
+        const header = document.querySelector("header");
+        if (!sidebar) return;
+        const hh = header ? header.offsetHeight : 0;
+        const sticky = new hcSticky(sidebar, {
             stickTo: ".single-product",
-            top: window.headerHeight || 0,
-            bottomEnd: 0,
-            responsive: {
-                0: {
-                    disable: true
-                },
-                1024: {
-                    disable: false
-                }
-            }
+            top: hh
         });
         const spollerItems = document.querySelectorAll(".single-product .spollers__item");
         if (spollerItems.length > 0) spollerItems.forEach((element => {
             element.addEventListener("click", (function() {
-                stickyInstance.update();
+                sticky.refresh();
             }));
         }));
     }));
-    window.addEventListener("resize", updateHeaderHeightVar);
     const catalogItems = document.querySelectorAll(".header-catalog");
     const html = document.documentElement;
     const isTouchDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0;

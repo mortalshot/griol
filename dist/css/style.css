@@ -525,6 +525,9 @@ h2 {
 ._font-medium {
   font-weight: 500
 }
+.mb-0 {
+  margin-bottom: 0!important
+}
 .d-none {
   display: none!important
 }
@@ -1991,12 +1994,15 @@ a.logo__link {
   gap: .25rem;
   border-radius: .375rem
 }
+.single-product__sidebar {
+  position: relative
+}
 .single-product__info {
   position: relative;
-  display: grid;
-  align-content: flex-start;
   background-color: #fff;
-  will-change: transform
+  will-change: position,transform;
+  display: grid;
+  align-content: flex-start
 }
 .single-product__about {
   display: grid;
@@ -2789,7 +2795,6 @@ body::after {
   }
   .single-product__scheme {
     display: flex;
-    align-items: flex-start;
     margin-left: -.625rem;
     margin-right: -.625rem
   }
