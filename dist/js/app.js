@@ -901,12 +901,15 @@
     }));
     function updateHeaderOffset({saveInitial = false} = {}) {
         const header = document.querySelector(".header");
-        if (!header) return;
+        const topline = document.querySelector(".topline");
+        if (!header || !topline) return;
         const rect = header.getBoundingClientRect();
-        const scrollY = window.scrollY || window.pageYOffset;
-        const headerBottomAbsolute = rect.bottom + scrollY;
-        document.documentElement.style.setProperty("--header-offset", `${headerBottomAbsolute}px`);
-        if (saveInitial && !document.documentElement.style.getPropertyValue("--header-offset-initial")) document.documentElement.style.setProperty("--header-offset-initial", `${headerBottomAbsolute}px`);
+        const totalDistance = rect.bottom;
+        document.documentElement.style.setProperty("--header-offset", `${totalDistance}px`);
+        if (saveInitial && !document.documentElement.style.getPropertyValue("--header-offset-initial")) {
+            const initialOffset = topline.offsetHeight + header.offsetHeight;
+            document.documentElement.style.setProperty("--header-offset-initial", `${initialOffset}px`);
+        }
     }
     window.addEventListener("DOMContentLoaded", (() => {
         updateHeaderOffset({
@@ -917,17 +920,9 @@
         }), 100);
     }));
     window.addEventListener("resize", updateHeaderOffset);
-    function updateHeaderHeightVar() {
-        const header = document.querySelector(".header");
-        if (!header) return;
-        const height = header.offsetHeight;
-        document.documentElement.style.setProperty("--header-height", `${height}px`);
-        window.headerHeight = height;
-    }
-    window.addEventListener("DOMContentLoaded", updateHeaderHeightVar);
-    window.addEventListener("load", updateHeaderHeightVar);
-    window.addEventListener("resize", updateHeaderHeightVar);
+    window.addEventListener("scroll", updateHeaderOffset);
     document.addEventListener("DOMContentLoaded", (() => {
+        if (window.innerWidth <= 574.98) return;
         const sidebar = document.querySelector(".single-product__info");
         const header = document.querySelector("header");
         if (!sidebar) return;
@@ -947,15 +942,7 @@
     const html = document.documentElement;
     const isTouchDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0;
     let activeItem = null;
-    let hoverLock = false;
-    let hoverTimeout = null;
     function openCatalog(item) {
-        if (hoverLock) return;
-        hoverLock = true;
-        clearTimeout(hoverTimeout);
-        hoverTimeout = setTimeout((() => {
-            hoverLock = false;
-        }), 500);
         if (html.classList.contains("_search-show")) {
             html.classList.remove("_search-show");
             if (!html.classList.contains("menu-open") && bodyLockStatus) bodyUnlock();
@@ -964,45 +951,36 @@
         item.classList.add("_show");
         html.classList.add("_catalog-show");
         updateHeaderOffset();
-        if (bodyLockStatus) bodyLock();
         activeItem = item;
     }
     function closeCatalog() {
-        if (hoverLock) return;
         if (activeItem) {
             activeItem.classList.remove("_show");
             activeItem = null;
         }
         html.classList.remove("_catalog-show");
-        if (!html.classList.contains("_search-show") && !html.classList.contains("menu-open")) if (bodyLockStatus) bodyUnlock();
     }
-    catalogItems.forEach((item => {
+    if (catalogItems && catalogItems.length > 0) catalogItems.forEach((item => {
         const toggle = item.querySelector(".header-catalog__toggle");
         if (isTouchDevice && toggle) toggle.addEventListener("click", (e => {
             e.stopPropagation();
-            const isOpen = item.classList.contains("_show");
-            if (isOpen) closeCatalog(); else openCatalog(item);
+            item.classList.contains("_show") ? closeCatalog() : openCatalog(item);
         }));
         if (!isTouchDevice) item.addEventListener("mouseenter", (() => {
             openCatalog(item);
         }));
     }));
-    let closeTimeout = null;
     if (!isTouchDevice) {
+        const menuItems = document.querySelectorAll(".header-menu__item");
+        menuItems.forEach((menuItem => {
+            menuItem.addEventListener("mouseenter", (() => {
+                if (!menuItem.classList.contains("header-catalog")) closeCatalog(); else if (activeItem !== menuItem) openCatalog(menuItem);
+            }));
+        }));
         const header = document.querySelector(".header");
-        if (header) {
-            header.addEventListener("mouseleave", (() => {
-                closeTimeout = setTimeout((() => {
-                    closeCatalog();
-                }), 500);
-            }));
-            header.addEventListener("mouseenter", (() => {
-                if (closeTimeout) {
-                    clearTimeout(closeTimeout);
-                    closeTimeout = null;
-                }
-            }));
-        }
+        if (header) header.addEventListener("mouseleave", (() => {
+            closeCatalog();
+        }));
     }
     const headerCatalogBlocks = document.querySelectorAll(".header-catalog");
     function initHeaderCatalogTabs() {
@@ -1194,6 +1172,7 @@
         initCustomSlickSlider({
             rootSelector: ".hero",
             sliderSelector: ".hero__slider-wrapper",
+            lazyLoad: "ondemand",
             slickSettings: {
                 slidesToShow: 1,
                 dots: true
@@ -1240,6 +1219,7 @@
         initCustomSlickSlider({
             rootSelector: ".widget-products",
             sliderSelector: ".widget-products__slider",
+            lazyLoad: "ondemand",
             slickSettings: {
                 slidesToShow: 3,
                 useTransform: window.innerWidth > 767.98,
@@ -1259,6 +1239,7 @@
         initCustomSlickSlider({
             rootSelector: ".widget-category",
             sliderSelector: ".widget-category__slider",
+            lazyLoad: "ondemand",
             slickSettings: {
                 slidesToShow: 4.7,
                 responsive: [ {
@@ -1292,6 +1273,7 @@
         initCustomSlickSlider({
             rootSelector: ".widget-featured",
             sliderSelector: ".widget-featured__slider",
+            lazyLoad: "ondemand",
             slickSettings: {
                 slidesToShow: 4,
                 useTransform: window.innerWidth > 767.98,
@@ -1392,7 +1374,8 @@
                 dots: true,
                 swipe: false,
                 fade: true,
-                speed: 100
+                speed: 100,
+                lazyLoad: "ondemand"
             });
             const slickInstance = $(slider).slick("getSlick");
             const slideCount = slickInstance.slideCount;
@@ -1474,6 +1457,21 @@
                 }), 300);
             }), 2e3);
         }
+        if (targetElement.classList.contains("location__button") || targetElement.closest(".location__button")) {
+            targetElement.closest("body").classList.add("_location-active");
+            bodyLock();
+        }
+        if (!targetElement.closest(".location-dropdown") && document.querySelectorAll("body._location-active").length > 0 && !targetElement.closest(".location__button")) {
+            document.querySelector("body").classList.remove("_location-active");
+            document.querySelector("body").classList.remove("_location-select");
+            bodyUnlock();
+        }
+        if (targetElement.classList.contains("location-close") || targetElement.closest(".location-close")) {
+            document.querySelector("body").classList.remove("_location-active");
+            document.querySelector("body").classList.remove("_location-select");
+            bodyUnlock();
+        }
+        if (targetElement.classList.contains("location-next") || targetElement.closest(".location-next")) document.querySelector("body").classList.add("_location-select");
     }));
     function initProductDetailsToggle() {
         const buttons = document.querySelectorAll(".product-details__button");
@@ -1566,6 +1564,7 @@
     }
     window.addEventListener("DOMContentLoaded", initMobileOnlyProductWatchers);
     window.addEventListener("resize", initMobileOnlyProductWatchers);
+    document.body.addEventListener("scroll", initMobileOnlyProductWatchers);
     window.addEventListener("DOMContentLoaded", (function() {
         $(document).ready((function() {
             const hash = window.location.hash;
