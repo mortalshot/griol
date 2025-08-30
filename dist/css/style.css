@@ -814,7 +814,7 @@ video {
   position: sticky;
   top: 0;
   z-index: 150;
-  transition: .3s ease background-color 0s
+  transition: .1s ease all 0s
 }
 .header__scheme {
   display: flex;
@@ -919,6 +919,7 @@ a.logo__link {
   fill: #000
 }
 .header-catalog__wrapper {
+  display: block!important;
   position: fixed;
   z-index: 150;
   left: 0;
@@ -927,14 +928,12 @@ a.logo__link {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  background-color: transparent;
-  transition: .5s ease opacity,.5s visibility,.3s background-color;
   overflow-y: auto;
-  overflow-x: hidden
+  overflow-x: hidden;
+  background: #fff;
+  transition: .1s ease all 0s
 }
 ._show .header-catalog__wrapper {
-  display: block!important;
-  background-color: #fff;
   opacity: 1!important;
   visibility: visible;
   pointer-events: all
@@ -4375,6 +4374,7 @@ body::after {
     top: 0;
     min-height: 33.625rem;
     width: 100%;
+    height: 100%;
     background-color: #fff;
     opacity: 0;
     visibility: hidden;
@@ -4382,6 +4382,7 @@ body::after {
     -webkit-transform: translateY(-.9375rem);
     transform: translateY(-.9375rem);
     padding: 1.5rem 1.25rem;
+    overflow-y: auto;
     transition: .5s ease opacity,.5s visibility,.5s -webkit-transform 0s;
     transition: .5s ease opacity,.5s visibility,.5s transform 0s;
     transition: .5s ease opacity,.5s visibility,.5s transform 0s,.5s -webkit-transform 0s
