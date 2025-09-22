@@ -2089,6 +2089,10 @@ a.logo__link {
 .subscribe__privacy:not(:first-child) {
   margin-top: 1rem
 }
+.subscribe__privacy .checkbox__label {
+  color: #fff;
+  text-align: left
+}
 .subscribe__privacy a {
   display: inline-block;
   -webkit-text-decoration: underline from-font;
@@ -3655,6 +3659,9 @@ body::after {
   .subscribe__main input {
     min-height: 2.9375rem
   }
+  .subscribe__privacy .checkbox__label {
+    font-size: 1.125rem
+  }
   .subscribe__note:not(:first-child) {
     margin-top: 4.75rem
   }
@@ -4180,6 +4187,9 @@ body::after {
   }
   .subscribe__main input {
     min-height: 2.3125rem
+  }
+  .subscribe__privacy .checkbox__label {
+    font-size: .875rem
   }
   .subscribe__note:not(:first-child) {
     margin-top: 1rem
@@ -5125,6 +5135,9 @@ body::after {
   }
   .subscribe__main input {
     min-height: clamp(2.3125rem ,2.1726398601rem + .6993006993vw ,2.9375rem)
+  }
+  .subscribe__privacy .checkbox__label {
+    font-size: clamp(.875rem ,.8190559441rem + .2797202797vw ,1.125rem)
   }
   .subscribe__note:not(:first-child) {
     margin-top: clamp(1rem ,.1608391608rem + 4.1958041958vw ,4.75rem)
