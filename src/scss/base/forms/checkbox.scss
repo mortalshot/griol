@@ -1,0 +1,78 @@
+.checkbox {
+	position: relative;
+
+	&:not(:last-child) {
+		margin-bottom: em(5);
+	}
+	// .checkbox__input
+	&__input {
+		position: absolute;
+		width: 0;
+		height: 0;
+		opacity: 0;
+		&:checked + .checkbox__label:after {
+			opacity: 1;
+		}
+	}
+	// .checkbox__label
+	&__label {
+		cursor: pointer;
+		display: inline-flex;
+		position: relative;
+		padding-left: toRem(34);
+		min-height: toRem(24);
+		@include adaptiveValue("font-size", 14, 12);
+
+		&::before,
+		&::after {
+			content: "";
+			display: block;
+			position: absolute;
+			top: 50%;
+			transform: translateY(-50%);
+		}
+
+		&:before {
+			align-self: flex-start;
+			flex: 0 0 toRem(24);
+			width: toRem(24);
+			height: toRem(24);
+			left: 0;
+		}
+		&:after {
+			flex: 0 0 toRem(14);
+			width: toRem(14);
+			height: toRem(11);
+			background: url(../img/icons/accept.svg) no-repeat center/contain;
+			left: toRem(5);
+			opacity: 0;
+			transition: $transition ease opacity 0s;
+		}
+
+		a {
+			display: inline-block;
+			padding: toRem(5);
+			margin: toRem(-5);
+
+			&::before {
+				left: toRem(5);
+				width: calc(100% - toRem(10));
+				bottom: toRem(5);
+			}
+		}
+	}
+	// .checkbox__text
+	&__text {
+		align-self: center;
+	}
+
+	&_white {
+		.checkbox__label {
+			color: rgba($color: #000000, $alpha: 0.4);
+
+			&::before {
+				background-color: $White;
+			}
+		}
+	}
+}

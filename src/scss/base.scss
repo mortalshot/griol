@@ -1,0 +1,36 @@
+// Общий файл элементов форм
+// Для подключения/отключения стилей конкретного элемента формы смотри base/forms/forms.scss
+@import "base/forms/forms";
+
+// Стили меню + бургер
+// @import "base/menu";
+
+// Стили попапов
+// @import "base/popup";
+
+// Стили спойлеров
+@import "base/spollers";
+
+// Стили табов
+// @import "base/tabs";
+
+// Стили карт
+// @import "base/maps";
+
+// Стили блока "показать еще"
+@import "base/showmore";
+
+// Стили для липкого блока
+// @import "base/sticky";
+
+// Стили для прокрутки экрана
+// Styles for fullpage scroll
+// @import "base/fullpage";
+
+// Стили для эффекта ripple
+// Styles for ripple effect
+// @import "base/ripple";
+
+// Стили для кастомного курсора
+// Styles for custom cursor
+// @import "base/cursor";

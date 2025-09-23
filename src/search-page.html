@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+@@include('html/_head.htm',{
+"title":"Результаты поиска"
+})
+
+<body>
+  <div class="wrapper">
+    @@include('html/_header.htm',{
+    "class":""
+    })
+
+    <div class="inner">
+      <section class="search-section">
+        <div class="search-section__container">
+          <form action="#" class="search-section__search search">
+            <div class="search__input">
+              <input autocomplete="off" type="text" name="form[]" placeholder="Поиск..." class="input">
+              <button type="submit" class="search__submit">
+                <svg class="icon">
+                  <use xlink:href="@img/icons/icons.svg#search"></use>
+                </svg>
+              </button>
+            </div>
+
+            <ul class="search__tags">
+              <li><a href="#">Джинсы</a></li>
+              <li><a href="#">Футболки</a></li>
+              <li><a href="#">Куртки</a></li>
+              <li><a href="#">Брюки</a></li>
+              <li><a href="#">Шорты</a></li>
+            </ul>
+          </form>
+
+          <div class="search-section__heading _heading">
+            <h1 class="search-section__title _upper-case">Результаты поиска</h1>
+          </div>
+
+          <div class="search-section__grid">
+            <aside class="search-section__sidebar">
+              <div class="search-section__result">
+                <div class="search-section__category">
+                  <a href="" class="search-section__category-name _upper-case">Костюмы и комплекты</a>
+                  <div class="search-section__category-val">44 результата</div>
+                </div>
+
+                <div class="search-section__category">
+                  <a href="" class="search-section__category-name _upper-case">Платье</a>
+                  <div class="search-section__category-val">4 результата</div>
+                </div>
+              </div>
+
+              <div class="search-section__rec">
+                <div class="search-section__caption _upper-case">Рекомендуем коллекции</div>
+
+                <ul class="search-section__list">
+                  <li>
+                    <a href="">Джонни Емельянович</a>
+                  </li>
+                  <li>
+                    <a href="">Заметки флориста</a>
+                  </li>
+                  <li>
+                    <a href="">Морошка</a>
+                  </li>
+                </ul>
+              </div>
+            </aside>
+
+            <div class="search-section__items _row">
+              <div class="col-12 col-xs-6 col-sm-4 col-md-6 col-lg-4">
+                @@include('html/product-card.htm',{})
+              </div>
+              <div class="col-12 col-xs-6 col-sm-4 col-md-6 col-lg-4">
+                @@include('html/product-card.htm',{})
+              </div>
+              <div class="col-12 col-xs-6 col-sm-4 col-md-6 col-lg-4">
+                @@include('html/product-card.htm',{})
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    @@include('html/_footer.htm',{})
+  </div>
+  @@include('html/_js.htm',{})
+</body>
+
+</html>

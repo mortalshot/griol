@@ -1,0 +1,79 @@
+//<BUTTONS (a.btn+tab)>
+// Сниппет (HTML): btn
+
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0px 0px;
+	font-weight: 500;
+	font-size: toRem(14);
+	line-height: math.div(17, 14);
+	min-height: toRem(47);
+	padding: toRem(8) toRem(16);
+
+	@media (any-hover: hover) {
+		&:hover {
+			svg {
+				animation: shake-horizontal 0.7s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+			}
+		}
+	}
+
+	// .btn_bg-black
+	&_bg-black {
+		background-color: #000000;
+		color: $White;
+
+		@media (any-hover: hover) {
+			transition: $transition ease background-color 0s;
+			&:hover {
+				background-color: #343640;
+			}
+		}
+
+		svg {
+			fill: $White;
+		}
+	}
+
+	// .btn_bg-white
+	&_bg-white {
+		background-color: $White;
+		color: $mainColor;
+
+		@media (any-hover: hover) {
+			transition: $transition ease background-color 0s;
+			&:hover {
+				background-color: #343640;
+			}
+		}
+	}
+
+	// .btn_border-black
+	&_border-black {
+		border: toRem(1) solid $mainColor;
+		border-color: $mainColor;
+		color: $mainColor;
+
+		@media (any-hover: hover) {
+			transition: $transition ease box-shadow 0s;
+			&:hover {
+				box-shadow: inset 0 0 0 toRem(2) rgba($color: $mainColor, $alpha: 0.5);
+			}
+		}
+	}
+
+	// .btn_border-white
+	&_border-white {
+		border: toRem(1) solid $White;
+		color: $White;
+
+		@media (any-hover: hover) {
+			transition: $transition ease background-color 0s;
+			&:hover {
+				background-color: $mainColor;
+			}
+		}
+	}
+}
