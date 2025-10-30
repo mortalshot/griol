@@ -509,6 +509,23 @@ function initSliders() {
     }
   });
 
+    // stories__slider
+  initCustomSlickSlider({
+    rootSelector: '.widget-featured',
+    sliderSelector: '.stories__slider',
+    lazyLoad: 'ondemand',
+    slickSettings: {
+      slidesToShow: 4,
+      useTransform: window.innerWidth > 767.98,
+      responsive: [
+        { breakpoint: 992, settings: { slidesToShow: 3 } },
+        { breakpoint: 768, settings: { slidesToShow: 2.7 } },
+        { breakpoint: 575, settings: { slidesToShow: 2.5 } },
+        { breakpoint: 480, settings: { slidesToShow: 1.5 } },
+      ]
+    }
+  });
+
   // Реализуем свайп по слайдеру, чтобы страница скроллилась
   function initGallerySwipeScroll() {
     if (window.innerWidth > 574.98) return;
@@ -668,6 +685,14 @@ function initTagshotToggles() {
       }, 500); // Блокируем повторный клик на 0.5 секунды
     });
   });
+
+  // Проверка на мобильное разрешение
+  const tagshotSection = document.querySelector('.videolook__tagshot');
+  if (window.innerWidth < 767.98 && tagshotSection) {
+    tagshotSection.classList.remove('_active');
+    const wrapper = tagshotSection.querySelector('.tagshot__wrapper');
+    _slideUp(wrapper, 0);
+  }
 }
 initTagshotToggles();
 
