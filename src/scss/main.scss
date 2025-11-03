@@ -43,12 +43,8 @@
       width: 100%;
       padding-top: toRem(18);
       padding-bottom: toRem(18);
-      @include adaptiveValue("padding-left", math.div($containerPadding, 2), 10, 0, 1750, 360);
-      @include adaptiveValue("padding-right", math.div($containerPadding, 2), 10, 0, 1750, 360);
       background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, #000 100%);
       opacity: 0.8;
-      @include adaptiveValue("margin-left", math.div(-$containerPadding, 2), -10, 0, 1750, 360);
-      @include adaptiveValue("margin-right", math.div(-$containerPadding, 2), -10, 0, 1750, 360);
     }
   }
 
@@ -209,9 +205,6 @@
 .widget-products {
   // .widget-products__container
   &__container {
-    @media (max-width: $pc) {
-      padding: 0 !important;
-    }
   }
 
   // .widget-products__head
@@ -220,8 +213,6 @@
     align-items: center;
     justify-content: space-between;
     gap: toRem(20);
-    @include adaptiveValue("padding-left", math.div($containerPadding, 2), 10, 0, 1750, 360);
-    @include adaptiveValue("padding-right", math.div($containerPadding, 2), 10, 0, 1750, 360);
   }
 
   // .widget-products__caption
@@ -235,6 +226,11 @@
   // .widget-products__slider
   &__slider {
     position: relative;
+    @include adaptiveValue("padding-inline", math.div($containerPadding, 2), 10, 0, 1750, 360);
+
+    .slick-list {
+      overflow: initial;
+    }
   }
 
   // .widget-products__slide
@@ -908,6 +904,8 @@
 
   // .stylist__slider
   &__slider {
+    @include adaptiveValue("padding-inline", math.div($containerPadding, 2), 10, 0, 1750, 360);
+
     .slick-list {
       overflow: initial;
     }
@@ -1004,6 +1002,8 @@
 
   // .widget-category__slider
   &__slider {
+    @include adaptiveValue("padding-inline", math.div($containerPadding, 2), 10, 0, 1750, 360);
+
     .slick-list {
       overflow: initial;
     }
@@ -1017,7 +1017,7 @@
   &__slide {
     height: auto;
     margin: 0 toRem(1);
-    background-color: #ebebee;
+    // background-color: #ebebee;
     padding: toRem(22);
     display: flex !important;
     flex-direction: column;
@@ -1102,14 +1102,7 @@
 
   // .widget-featured__slider
   &__slider {
-    @media (min-width: toEm(1750)) {
-      @include adaptiveValue("margin-left", 0, math.div($containerPadding, -2), 0, 1790, 1750);
-      @include adaptiveValue("margin-right", 0, math.div($containerPadding, -2), 0, 1790, 1750);
-    }
-    @media (max-width: toEm(1750)) {
-      @include adaptiveValue("margin-left", math.div($containerPadding, -2), -10, 0, 1750, 360);
-      @include adaptiveValue("margin-right", math.div($containerPadding, -2), -10, 0, 1750, 360);
-    }
+    @include adaptiveValue("padding-inline", math.div($containerPadding, 2), 10, 0, 1750, 360);
 
     .slick-list {
       overflow: initial !important;
@@ -3099,8 +3092,10 @@
 }
 
 .stories__slider {
-  @media (max-width: $mobile) {
-    @include adaptiveValue("margin-inline", -20, -12, 0, 1750, 360);
+	@include adaptiveValue("padding-inline", math.div($containerPadding, 2), 10, 0, 1750, 360);
+
+  .slick-list {
+    overflow: initial;
   }
 
   .stories__slide {
