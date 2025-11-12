@@ -1175,7 +1175,9 @@
             lazyLoad: "ondemand",
             slickSettings: {
                 slidesToShow: 1,
-                dots: true
+                dots: true,
+                autoplay: true,
+                autoplaySpeed: 2e3
             }
         });
         initCustomSlickSlider({

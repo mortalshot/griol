@@ -1109,7 +1109,7 @@
     }
 
     .slick-track {
-      margin: 0;
+      margin: 0 !important;
     }
   }
 
@@ -3092,10 +3092,14 @@
 }
 
 .stories__slider {
-	@include adaptiveValue("padding-inline", math.div($containerPadding, 2), 10, 0, 1750, 360);
+  @include adaptiveValue("padding-inline", math.div($containerPadding, 2), 10, 0, 1750, 360);
 
   .slick-list {
     overflow: initial;
+  }
+
+  .slick-track {
+    margin: 0 !important;
   }
 
   .stories__slide {

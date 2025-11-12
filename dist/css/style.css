@@ -1869,7 +1869,7 @@ a.logo__link {
   overflow: initial!important
 }
 .widget-featured__slider .slick-track {
-  margin: 0
+  margin: 0!important
 }
 .widget-featured__slide {
   margin: 0 .0625rem
@@ -2787,6 +2787,9 @@ a.logo__link {
 }
 .stories__slider .slick-list {
   overflow: initial
+}
+.stories__slider .slick-track {
+  margin: 0!important
 }
 .stories__slider .stories__slide {
   margin-right: 6px
