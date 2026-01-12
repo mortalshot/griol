@@ -425,9 +425,10 @@
     display: grid;
     align-content: flex-start;
     row-gap: toRem(16);
-    max-height: toRem(461);
+    height: calc(var(--tagshot-list-h) - 20px);
     overflow-y: auto;
     overflow-x: hidden;
+    position: relative;
 
     @media (max-width: $mobile) {
       padding-top: toRem(24);
@@ -3140,25 +3141,28 @@
 
   // .videolook__grid
   &__grid {
-    position: relative;
-    display: grid;
-    @include adaptiveValue("column-gap", 36, 16, 0, 1750, 992);
-
     @media (min-width: $mobile) {
-      border-top: 1px solid rgba($color: #000000, $alpha: 0.06);
-      grid-template-columns: repeat(2, 1fr);
-      @include adaptiveValue("padding-block", 54, 36, 0, 1750, 768);
+      display: flex;
+      @include adaptiveValue("column-gap", 36, 16, 0, 1750, 992);
+    }
+    @media (min-width: toEm(1279.98)) {
+      .videolook__tagshot,
+      .videolook__devider {
+        flex: 0 1 33.333%;
+      }
 
-      &:not(:last-child) {
-        border-bottom: 1px solid rgba($color: #000000, $alpha: 0.06);
-        margin-bottom: toRem(44);
+      .videolook__media {
+        flex: 1 0 33.333%;
       }
     }
-    @media (min-width: toEm(1440)) {
-      grid-template-columns: percent(542, 1710) 1fr;
-    }
-    @media (max-width: $mobile) {
-      @include adaptiveValue("margin-inline", -20, -12, 0, 1750, 360);
+    @media (max-width: toEm(1279.98)) {
+      .videolook__media {
+        flex: 1;
+      }
+
+      .videolook__devider {
+        display: none;
+      }
     }
 
     &:not(:last-child) {
@@ -3244,17 +3248,8 @@
         }
       }
     }
-
-    .tagshot__list {
-      @media (min-width: $mobile) {
-        max-height: toRem(calc(109 * 5 + 16 * 4));
-      }
-      @media (min-width: $tablet) {
-        max-height: toRem(calc(109 * 7 + 16 * 6));
-      }
-    }
-
-    .tagshot__item {
+    .tagshot__item,
+    .shot-item__front {
       grid-template-columns: toRem(66) 1fr toRem(54);
     }
   }
@@ -3262,11 +3257,43 @@
   // .videolook__media
   &__media {
     position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+
+    @media (max-width: $mobile) {
+      height: var(--videolook-media-h);
+    }
 
     video {
-      @media (max-width: $mobile) {
-        width: 100%;
-        object-fit: cover;
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: calc(100% - toRem(5));
+      object-fit: contain;
+
+      &::-webkit-media-controls-fullscreen-button {
+        display: none;
+      }
+    }
+  }
+
+  // videolook__fullscreen
+  &__fullscreen {
+    position: absolute;
+    right: 100px;
+    bottom: 35px;
+    z-index: 2;
+    padding: 6px;
+    width: 36px;
+    border-radius: 50%;
+    opacity: 0.8;
+
+    @media (any-hover: hover) {
+      transition: $transition ease all 0s;
+      &:hover {
+        opacity: 1;
+        background: rgba($color: #333333, $alpha: 0.8);
       }
     }
   }
@@ -3282,4 +3309,197 @@
   }
 }
 
+.fancybox-toolbar {
+  display: none;
+}
+
+// .shot-item   ====================================================================================================
+.shot-item {
+  // .shot-item__front
+  &__front {
+    display: grid;
+    grid-template-columns: toRem(87) 1fr toRem(54);
+    gap: toRem(8);
+    cursor: pointer;
+  }
+
+  // .shot-item__preview
+  &__preview {
+    img {
+      aspect-ratio: 87/143;
+      object-fit: contain;
+    }
+  }
+
+  // .shot-item__body
+  &__body {
+    display: flex;
+    flex-direction: column;
+    padding-top: toRem(2);
+    padding-bottom: toRem(2);
+  }
+
+  // .shot-item__info
+  &__info {
+    flex: 1;
+    display: grid;
+    align-content: flex-start;
+    justify-content: flex-start;
+    row-gap: toRem(16);
+  }
+
+  // .shot-item__title
+  &__title {
+    font-size: toRem(16);
+    line-height: math.div(19, 16);
+  }
+
+  // .shot-item__price
+  &__price {
+    font-weight: 500;
+    font-size: toRem(18);
+  }
+
+  // .shot-item__wishlist
+  &__wishlist {
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  // .shot-item__wishlist-btn
+  &__wishlist-btn {
+    padding: toRem(5);
+    margin: toRem(-5);
+    display: flex;
+    align-items: center;
+    gap: toRem(4);
+    font-weight: 300;
+    font-size: toRem(12);
+    line-height: math.div(15, 12);
+
+    svg {
+      flex: 0 0 toRem(18);
+      width: toRem(18);
+      height: toRem(18);
+    }
+
+    @media (any-hover: hover) {
+      &:hover {
+        svg {
+          animation: shake-horizontal 0.7s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+        }
+      }
+    }
+  }
+
+  // .shot-item__cart
+  &__cart {
+  }
+
+  // .shot-item__cart-btn
+  &__cart-btn {
+    flex: 0 0 toRem(54);
+    width: toRem(54);
+    height: toRem(54);
+    border-radius: 50%;
+    background-color: #f3f3f3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+      flex: 0 0 toRem(20);
+      width: toRem(20);
+      height: toRem(20);
+    }
+
+    @media (any-hover: hover) {
+      &:hover {
+        svg {
+          animation: shake-horizontal 0.7s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+        }
+      }
+    }
+  }
+
+  // .shot-item__details
+  &__details {
+    height: calc(var(--tagshot-list-h) - 20px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: absolute;
+    inset: 0;
+    background-color: $White;
+    z-index: 1;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: 0.5s ease all 0s;
+
+    .shot-item--active & {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: all;
+    }
+  }
+
+  // .shot-item__back
+  &__back {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding-block: 12px;
+
+    img {
+      flex: 0 0 24px;
+      rotate: 180deg;
+    }
+  }
+
+  // .shot-item__description
+  &__description {
+    &:not(:first-child) {
+        margin-top: 24px;
+    }
+  }
+}
+
+.shot-slider {
+  position: relative;
+
+  // .shot-slider__gallery
+  &__gallery {
+  }
+
+  // .shot-slider__slide
+  &__slide {
+  }
+
+  // .shot-slider__dots
+  &__dots {
+    .slick-dots {
+      display: flex !important;
+      gap: 16px;
+      position: absolute;
+      left: 50%;
+      translate: -50% 0;
+      bottom: 12px;
+
+      li {
+        flex: 0 0 toRem(8);
+        width: toRem(8);
+        height: toRem(8);
+        background-color: rgba($color: $White, $alpha: 0.4);
+        border-radius: 50%;
+        overflow: hidden;
+        transition: $transition ease all 0s;
+
+        &.slick-active {
+          background-color: rgba($color: $White, $alpha: 1);
+        }
+      }
+    }
+  }
+}
 //====================================================================================================

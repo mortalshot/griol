@@ -1341,6 +1341,14 @@
                 } ]
             }
         });
+        initCustomSlickSlider({
+            rootSelector: ".shot-slider",
+            sliderSelector: ".shot-slider__gallery",
+            dotsContainerSelector: ".shot-slider__dots",
+            slickSettings: {
+                slidesToShow: 3
+            }
+        });
         function initGallerySwipeScroll() {
             if (window.innerWidth > 574.98) return;
             const gallery = document.querySelector(".single-product__gallery");
@@ -1614,6 +1622,143 @@
                 }
             });
         }));
+    }));
+    function setAdaptiveHeights() {
+        const isDesktop = window.matchMedia("(min-width: 768px)").matches;
+        const viewportH = document.documentElement.clientHeight;
+        if (isDesktop) {
+            const list = document.querySelector(".tagshot__list");
+            if (!list) return;
+            const rect = list.getBoundingClientRect();
+            const docTop = rect.top + window.pageYOffset;
+            let h = Math.floor(viewportH - docTop);
+            h = Math.max(0, Math.min(h, viewportH));
+            list.style.setProperty("--tagshot-list-h", `${h}px`);
+        } else {
+            const media = document.querySelector(".videolook__media");
+            if (!media) return;
+            const rect = media.getBoundingClientRect();
+            const docTop = rect.top + window.pageYOffset;
+            let h = Math.floor(viewportH - docTop);
+            h = Math.max(0, Math.min(h, viewportH));
+            media.style.setProperty("--videolook-media-h", `${h}px`);
+        }
+    }
+    function initAdaptiveHeights() {
+        setAdaptiveHeights();
+        const rafUpdate = () => requestAnimationFrame(setAdaptiveHeights);
+        window.addEventListener("resize", rafUpdate);
+        window.addEventListener("orientationchange", rafUpdate);
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener("resize", rafUpdate);
+            window.visualViewport.addEventListener("scroll", rafUpdate);
+        }
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(rafUpdate);
+    }
+    document.addEventListener("DOMContentLoaded", initAdaptiveHeights);
+    window.addEventListener("load", (() => {
+        requestAnimationFrame(setAdaptiveHeights);
+    }));
+    function waitForMetadata(videoEl) {
+        return new Promise((resolve => {
+            if (!videoEl) return resolve();
+            if (videoEl.readyState >= 1) {
+                resolve();
+                return;
+            }
+            const onLoaded = () => {
+                videoEl.removeEventListener("loadedmetadata", onLoaded);
+                resolve();
+            };
+            videoEl.addEventListener("loadedmetadata", onLoaded, {
+                once: true
+            });
+        }));
+    }
+    function clampTime(t) {
+        return Number.isFinite(t) && t > 0 ? t : 0;
+    }
+    function openVideoInFancybox(inlineWrap) {
+        const inlineVideo = inlineWrap.querySelector("video");
+        if (!inlineVideo) return;
+        const sourceEl = inlineVideo.querySelector("source");
+        const src = sourceEl ? sourceEl.getAttribute("src") : inlineVideo.currentSrc;
+        if (!src) return;
+        const state = {
+            time: clampTime(inlineVideo.currentTime),
+            wasPlaying: !inlineVideo.paused && !inlineVideo.ended,
+            muted: inlineVideo.muted,
+            volume: inlineVideo.volume,
+            playbackRate: inlineVideo.playbackRate
+        };
+        inlineVideo.pause();
+        const tpl = document.querySelector("#video-modal-template");
+        if (!tpl) return;
+        const node = tpl.content.firstElementChild.cloneNode(true);
+        const modalVideo = node.querySelector("video");
+        const modalSource = node.querySelector("[data-modal-source]");
+        if (modalSource) modalSource.setAttribute("src", src);
+        if (modalVideo) {
+            modalVideo.loop = inlineVideo.loop;
+            modalVideo.muted = state.muted;
+            modalVideo.volume = state.volume;
+            modalVideo.playbackRate = state.playbackRate;
+            modalVideo.load();
+        }
+        $.fancybox.open({
+            type: "html",
+            src: node,
+            opts: {
+                touch: false,
+                smallBtn: true,
+                toolbar: true,
+                trapFocus: true,
+                afterShow: async function() {
+                    await waitForMetadata(modalVideo);
+                    try {
+                        modalVideo.currentTime = state.time;
+                    } catch (e) {}
+                    if (state.wasPlaying) try {
+                        await modalVideo.play();
+                    } catch (e) {}
+                },
+                beforeClose: function() {
+                    if (!modalVideo || !inlineVideo) return;
+                    const t = clampTime(modalVideo.currentTime);
+                    try {
+                        inlineVideo.currentTime = t;
+                    } catch (e) {}
+                    if (state.wasPlaying) {
+                        const p = inlineVideo.play();
+                        if (p && typeof p.catch === "function") p.catch((() => {}));
+                    }
+                }
+            }
+        });
+    }
+    function initVideoModal() {
+        document.addEventListener("click", (e => {
+            const btn = e.target.closest("[data-video-fullscreen]");
+            if (!btn) return;
+            const wrap = btn.closest("[data-video-modal]");
+            if (!wrap) return;
+            e.preventDefault();
+            openVideoInFancybox(wrap);
+        }));
+    }
+    document.addEventListener("DOMContentLoaded", initVideoModal);
+    document.addEventListener("click", (e => {
+        const front = e.target.closest(".shot-item__front");
+        if (front) {
+            const item = front.closest(".shot-item");
+            if (item) item.classList.add("shot-item--active");
+            return;
+        }
+        const back = e.target.closest(".shot-item__back");
+        if (back) {
+            const item = back.closest(".shot-item");
+            if (item) item.classList.remove("shot-item--active");
+        }
     }));
     window["FLS"] = true;
     menuInit();
