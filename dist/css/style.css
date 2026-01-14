@@ -815,9 +815,6 @@ video {
   top: 0;
   z-index: 150
 }
-.compensate-for-scrollbar .header {
-  padding-right: 15px
-}
 .header__scheme {
   display: flex;
   align-items: flex-start
@@ -2831,16 +2828,6 @@ a.logo__link {
 .videolook__media video::-webkit-media-controls-fullscreen-button {
   display: none
 }
-.videolook__fullscreen {
-  position: absolute;
-  right: 100px;
-  bottom: 35px;
-  z-index: 2;
-  padding: 6px;
-  width: 36px;
-  border-radius: 50%;
-  opacity: .8
-}
 .videolook__text {
   max-width: 49.875rem
 }
@@ -2928,7 +2915,8 @@ a.logo__link {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition: .5s ease all 0s
+  transition: .5s ease all 0s;
+  min-width: 0
 }
 .shot-item--active .shot-item__details {
   opacity: 1;
@@ -2971,6 +2959,20 @@ a.logo__link {
 }
 .shot-slider__dots .slick-dots li.slick-active {
   background-color: #fff
+}
+.video-modal {
+  width: 100%;
+  max-width: 122.5rem
+}
+.video-modal .videolook__grid {
+  display: grid;
+  grid-template-columns: 33.33% 1fr
+}
+.video-modal .videolook__devider {
+  display: none!important
+}
+.video-modal .videolook__fullscreen {
+  display: none!important
 }
 body,
 html {
@@ -3723,6 +3725,16 @@ body::after {
   .stories__list {
     grid-template-columns: repeat(3,1fr)
   }
+  .videolook__fullscreen {
+    position: absolute;
+    right: 100px;
+    bottom: 35px;
+    z-index: 2;
+    padding: 6px;
+    width: 36px;
+    border-radius: 50%;
+    opacity: .8
+  }
 }
 @media (min-width:61.99875em) and (min-width:90em) {
   .header-menu__item > a {
@@ -3747,6 +3759,15 @@ body::after {
     height: 2.6875rem
   }
 }
+@media (min-width:61.99875em) and (any-hover:hover) {
+  .videolook__fullscreen {
+    transition: .3s ease all 0s
+  }
+  .videolook__fullscreen:hover {
+    opacity: 1;
+    background: rgba(51,51,51,.8)
+  }
+}
 @media (min-width:79.99875em) {
   .videolook__grid .videolook__devider,
   .videolook__grid .videolook__tagshot {
@@ -3763,10 +3784,7 @@ body::after {
 }
 @media (min-width:109.375em) {
   [class*=__container] {
-    padding-left: 1.25rem
-  }
-  [class*=__container] {
-    padding-right: 1.25rem
+    padding-inline: 1.25rem
   }
   .widget-products__slider {
     padding-inline: 1.25rem
@@ -3804,6 +3822,9 @@ body::after {
     font-size: 1.625rem
   }
   .stories__slider {
+    padding-inline: 1.25rem
+  }
+  .video-modal {
     padding-inline: 1.25rem
   }
 }
@@ -4932,11 +4953,9 @@ body::after {
   .tagshot__list {
     padding-top: 1.5rem;
     border-top: .0625rem solid #f2f2f2;
-    padding-left: 1.25rem;
-    padding-right: 1.25rem;
-    margin-left: -1.25rem;
-    margin-right: -1.25rem;
-    max-height: calc(100svh - 5.875rem - 1.5rem)
+    padding-inline: 1.25rem;
+    margin-inline: -1.25rem;
+    height: calc(100svh - 5.875rem - 1.5rem)
   }
   .tagshot-toggle__state_opened span {
     display: none
@@ -4983,6 +5002,9 @@ body::after {
   }
   .videolook__media {
     height: var(--videolook-media-h)
+  }
+  .shot-item__details {
+    padding-inline: 1.25rem
   }
 }
 @media (max-width:35.93625em) {
@@ -5256,10 +5278,7 @@ body::after {
 }
 @media (max-width:22.5em) {
   [class*=__container] {
-    padding-left: .625rem
-  }
-  [class*=__container] {
-    padding-right: .625rem
+    padding-inline: .625rem
   }
   .topline__link {
     padding-top: .5rem
@@ -5318,13 +5337,13 @@ body::after {
   .stories__slider {
     padding-inline: .625rem
   }
+  .video-modal {
+    padding-inline: .625rem
+  }
 }
 @media (min-width:22.5em) and (max-width:109.375em) {
   [class*=__container] {
-    padding-left: clamp(.625rem ,.4631294964rem + .7194244604vw ,1.25rem)
-  }
-  [class*=__container] {
-    padding-right: clamp(.625rem ,.4631294964rem + .7194244604vw ,1.25rem)
+    padding-inline: clamp(.625rem ,.4631294964rem + .7194244604vw ,1.25rem)
   }
   .widget-products__slider {
     padding-inline: clamp(.625rem ,.4631294964rem + .7194244604vw ,1.25rem)
@@ -5351,6 +5370,9 @@ body::after {
     padding-right: clamp(.625rem ,.4631294964rem + .7194244604vw ,1.25rem)
   }
   .stories__slider {
+    padding-inline: clamp(.625rem ,.4631294964rem + .7194244604vw ,1.25rem)
+  }
+  .video-modal {
     padding-inline: clamp(.625rem ,.4631294964rem + .7194244604vw ,1.25rem)
   }
 }
@@ -6295,13 +6317,6 @@ body::after {
   .story-card__title a:hover {
     -webkit-text-decoration: underline from-font;
     text-decoration: underline from-font
-  }
-  .videolook__fullscreen {
-    transition: .3s ease all 0s
-  }
-  .videolook__fullscreen:hover {
-    opacity: 1;
-    background: rgba(51,51,51,.8)
   }
   .shot-item__wishlist-btn:hover svg {
     -webkit-animation: shake-horizontal .7s cubic-bezier(.25,.1,.25,1) both;

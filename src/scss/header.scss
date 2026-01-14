@@ -40,10 +40,6 @@
 	@include adaptiveValue("padding-top", 24, 22, 0, 768, 360);
 	@include adaptiveValue("padding-bottom", 24, 22, 0, 768, 360);
 
-	.compensate-for-scrollbar & {
-		padding-right: 15px;
-	}
-
 	// .header__container
 	&__container {
 	}

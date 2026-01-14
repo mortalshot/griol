@@ -613,8 +613,23 @@ function initSliders() {
     });
   }
 
+
   initGallerySwipeScroll();
   window.addEventListener('resize', initGallerySwipeScroll);
+}
+
+function refreshSlick(sliderEl) {
+  if (!sliderEl) return;
+  const $s = $(sliderEl);
+  if (!$s.hasClass('slick-initialized')) return;
+
+  // двойной rAF — чтобы успел примениться класс/анимация/лейаут
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      $s.slick('setPosition');
+      $s.slick('refresh');
+    });
+  });
 }
 
 function initInnerPreviewSliders() {
@@ -1024,12 +1039,11 @@ function clampTime(t) {
 }
 
 function openVideoInFancybox(inlineWrap) {
-  const inlineVideo = inlineWrap.querySelector('video');
-  if (!inlineVideo) return;
+  const grid = document.querySelector('.videolook__grid');
+  if (!grid) return;
 
-  const sourceEl = inlineVideo.querySelector('source');
-  const src = sourceEl ? sourceEl.getAttribute('src') : inlineVideo.currentSrc;
-  if (!src) return;
+  const inlineVideo = grid.querySelector('video');
+  if (!inlineVideo) return;
 
   const state = {
     time: clampTime(inlineVideo.currentTime),
@@ -1039,28 +1053,25 @@ function openVideoInFancybox(inlineWrap) {
     playbackRate: inlineVideo.playbackRate
   };
 
-  // Пауза inline, чтобы не было двойного звука
+  // Создаём якорь, чтобы вернуть грид на место
+  const placeholder = document.createComment('videolook__grid placeholder');
+  const originalParent = grid.parentNode;
+  const originalNextSibling = grid.nextSibling;
+
+  // На всякий: пауза перед перемещением (иначе иногда дергает)
   inlineVideo.pause();
 
   const tpl = document.querySelector('#video-modal-template');
   if (!tpl) return;
 
   const node = tpl.content.firstElementChild.cloneNode(true);
-  const modalVideo = node.querySelector('video');
-  const modalSource = node.querySelector('[data-modal-source]');
+  const mount = node.querySelector('[data-video-modal-mount]');
+  if (!mount) return;
 
-  if (modalSource) modalSource.setAttribute('src', src);
-  if (modalVideo) {
-    modalVideo.loop = inlineVideo.loop;
-    modalVideo.muted = state.muted;
-    modalVideo.volume = state.volume;
-    modalVideo.playbackRate = state.playbackRate;
+  // Вставляем плейсхолдер и переносим грид в модалку
+  originalParent.insertBefore(placeholder, originalNextSibling);
+  mount.appendChild(grid);
 
-    // Для некоторых сборщиков нужно принудительно обновить источники
-    modalVideo.load();
-  }
-
-  // Открываем Fancybox с нашим HTML-узлом
   $.fancybox.open({
     type: 'html',
     src: node,
@@ -1071,26 +1082,51 @@ function openVideoInFancybox(inlineWrap) {
       trapFocus: true,
 
       afterShow: async function () {
-        await waitForMetadata(modalVideo);
+        // Восстанавливаем состояние видео (оно то же самое, но на всякий)
+        try { inlineVideo.currentTime = state.time; } catch (e) {}
 
-        try { modalVideo.currentTime = state.time; } catch (e) { }
+        inlineVideo.muted = state.muted;
+        inlineVideo.volume = state.volume;
+        inlineVideo.playbackRate = state.playbackRate;
 
         if (state.wasPlaying) {
-          try { await modalVideo.play(); } catch (e) { }
+          try { await inlineVideo.play(); } catch (e) {}
         }
+
+        // Если внутри грида есть слайдеры — их нужно пересчитать после переноса
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            $('.shot-slider__gallery.slick-initialized').slick('setPosition');
+          });
+        });
       },
 
       beforeClose: function () {
-        if (!modalVideo || !inlineVideo) return;
+        // Запоминаем тайм перед возвратом
+        const t = clampTime(inlineVideo.currentTime);
 
-        const t = clampTime(modalVideo.currentTime);
+        // Возвращаем грид обратно на место
+        if (placeholder.parentNode) {
+          placeholder.parentNode.insertBefore(grid, placeholder);
+          placeholder.remove();
+        } else if (originalParent) {
+          originalParent.appendChild(grid);
+        }
 
-        try { inlineVideo.currentTime = t; } catch (e) { }
+        // Восстановление состояния
+        try { inlineVideo.currentTime = t; } catch (e) {}
 
         if (state.wasPlaying) {
           const p = inlineVideo.play();
-          if (p && typeof p.catch === 'function') p.catch(() => { });
+          if (p && typeof p.catch === 'function') p.catch(() => {});
         }
+
+        // Пересчитать слайдеры уже на странице
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            $('.shot-slider__gallery.slick-initialized').slick('setPosition');
+          });
+        });
       }
     }
   });
@@ -1101,10 +1137,9 @@ function initVideoModal() {
     const btn = e.target.closest('[data-video-fullscreen]');
     if (!btn) return;
 
-    const wrap = btn.closest('[data-video-modal]');
-    if (!wrap) return;
-
+    const wrap = btn.closest('[data-video-modal]') || document;
     e.preventDefault();
+
     openVideoInFancybox(wrap);
   });
 }
@@ -1114,9 +1149,17 @@ document.addEventListener('DOMContentLoaded', initVideoModal);
 document.addEventListener('click', (e) => {
   const front = e.target.closest('.shot-item__front');
   if (front) {
+    // Не открываем details, если клик был по интерактивным элементам
+    const interactive = e.target.closest(
+      'button, a, input, select, textarea, label, [role="button"], [data-no-open]'
+    );
+    if (interactive) return;
+
     const item = front.closest('.shot-item');
     if (item) {
       item.classList.add('shot-item--active');
+      const gallery = item.querySelector('.shot-slider__gallery');
+      refreshSlick(gallery);
     }
     return;
   }

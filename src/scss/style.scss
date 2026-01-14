@@ -55,8 +55,7 @@ $mobileSmall: toEm(479.98); // Телефоны S
 [class*="__container"] {
 	margin: 0 auto;
 	max-width: toRem($containerWidth);
-	@include adaptiveValue("padding-left", math.div($containerPadding, 2), 10, 0, 1750, 360);
-	@include adaptiveValue("padding-right", math.div($containerPadding, 2), 10, 0, 1750, 360);
+	@include adaptiveValue("padding-inline", math.div($containerPadding, 2), 10, 0, 1750, 360);
 }
 
 // Подключение базовых стилей, шаблонов (заготовок) и вспомогательных  классов

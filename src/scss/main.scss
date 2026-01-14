@@ -433,11 +433,9 @@
     @media (max-width: $mobile) {
       padding-top: toRem(24);
       border-top: toRem(1) solid #f2f2f2;
-      padding-left: toRem(20);
-      padding-right: toRem(20);
-      margin-left: toRem(-20);
-      margin-right: toRem(-20);
-      max-height: calc(100svh - toRem(94) - toRem(24));
+      padding-inline: toRem(20);
+      margin-inline: toRem(-20);
+      height: calc(100svh - toRem(94) - toRem(24));
     }
   }
 
@@ -3280,20 +3278,22 @@
 
   // videolook__fullscreen
   &__fullscreen {
-    position: absolute;
-    right: 100px;
-    bottom: 35px;
-    z-index: 2;
-    padding: 6px;
-    width: 36px;
-    border-radius: 50%;
-    opacity: 0.8;
+    @media (min-width: $tablet) {
+      position: absolute;
+      right: 100px;
+      bottom: 35px;
+      z-index: 2;
+      padding: 6px;
+      width: 36px;
+      border-radius: 50%;
+      opacity: 0.8;
 
-    @media (any-hover: hover) {
-      transition: $transition ease all 0s;
-      &:hover {
-        opacity: 1;
-        background: rgba($color: #333333, $alpha: 0.8);
+      @media (any-hover: hover) {
+        transition: $transition ease all 0s;
+        &:hover {
+          opacity: 1;
+          background: rgba($color: #333333, $alpha: 0.8);
+        }
       }
     }
   }
@@ -3435,6 +3435,11 @@
     visibility: hidden;
     pointer-events: none;
     transition: 0.5s ease all 0s;
+    min-width: 0;
+
+    @media (max-width: $mobile) {
+      padding-inline: toRem(20);
+    }
 
     .shot-item--active & {
       opacity: 1;
@@ -3460,7 +3465,7 @@
   // .shot-item__description
   &__description {
     &:not(:first-child) {
-        margin-top: 24px;
+      margin-top: 24px;
     }
   }
 }
@@ -3500,6 +3505,25 @@
         }
       }
     }
+  }
+}
+
+.video-modal {
+  width: 100%;
+  max-width: toRem($containerWidth);
+  @include adaptiveValue("padding-inline", math.div($containerPadding, 2), 10, 0, 1750, 360);
+
+  .videolook__grid {
+    display: grid;
+    grid-template-columns: 33.33% 1fr;
+  }
+
+  .videolook__devider {
+    display: none !important;
+  }
+
+  .videolook__fullscreen {
+    display: none !important;
   }
 }
 //====================================================================================================
