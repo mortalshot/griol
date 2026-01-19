@@ -803,6 +803,9 @@ function initProductDetailsToggle() {
   let activeTarget = null;
   let isLocked = false;
 
+  const sizeButton = document.querySelector('.product-details__button[data-link="product-size"]');
+  const sizeButtonIcon = sizeButton ? sizeButton.querySelector('svg')?.outerHTML : '';
+
   const closeActive = (fullClose = true) => {
     if (activeButton) activeButton.classList.remove('_active');
     if (activeTarget) activeTarget.classList.remove('_active');
@@ -861,6 +864,35 @@ function initProductDetailsToggle() {
     if (closeBtn) {
       closeActive();
     }
+  });
+
+  // Выбор размера
+  document.addEventListener('click', (e) => {
+    const sizeItem = e.target.closest('.sizeSelector');
+    if (!sizeItem) return;
+
+    const sizeValue =
+      sizeItem.dataset.sizename ||
+      sizeItem.querySelector('span')?.textContent.trim() ||
+      sizeItem.textContent.trim();
+
+    if (!sizeButton) return;
+
+    sizeButton.classList.add('_active');
+    sizeButton.innerHTML = `
+    Размер <span>${sizeValue}</span>
+    ${sizeButtonIcon}
+  `;
+
+    sizeButton.dataset.value = sizeValue;
+
+    const list = sizeItem.closest('ul');
+    if (list) {
+      list.querySelectorAll('.sizeSelector.active').forEach(el => el.classList.remove('active'));
+    }
+    sizeItem.classList.add('active');
+
+    closeActive();
   });
 }
 initProductDetailsToggle();
@@ -1083,14 +1115,14 @@ function openVideoInFancybox(inlineWrap) {
 
       afterShow: async function () {
         // Восстанавливаем состояние видео (оно то же самое, но на всякий)
-        try { inlineVideo.currentTime = state.time; } catch (e) {}
+        try { inlineVideo.currentTime = state.time; } catch (e) { }
 
         inlineVideo.muted = state.muted;
         inlineVideo.volume = state.volume;
         inlineVideo.playbackRate = state.playbackRate;
 
         if (state.wasPlaying) {
-          try { await inlineVideo.play(); } catch (e) {}
+          try { await inlineVideo.play(); } catch (e) { }
         }
 
         // Если внутри грида есть слайдеры — их нужно пересчитать после переноса
@@ -1114,11 +1146,11 @@ function openVideoInFancybox(inlineWrap) {
         }
 
         // Восстановление состояния
-        try { inlineVideo.currentTime = t; } catch (e) {}
+        try { inlineVideo.currentTime = t; } catch (e) { }
 
         if (state.wasPlaying) {
           const p = inlineVideo.play();
-          if (p && typeof p.catch === 'function') p.catch(() => {});
+          if (p && typeof p.catch === 'function') p.catch(() => { });
         }
 
         // Пересчитать слайдеры уже на странице
@@ -1157,6 +1189,8 @@ document.addEventListener('click', (e) => {
 
     const item = front.closest('.shot-item');
     if (item) {
+      const itemParent = item.closest('.tagshot__list');
+      itemParent.classList.add('scrollbar-off');
       item.classList.add('shot-item--active');
       const gallery = item.querySelector('.shot-slider__gallery');
       refreshSlick(gallery);
@@ -1169,6 +1203,8 @@ document.addEventListener('click', (e) => {
   if (back) {
     const item = back.closest('.shot-item');
     if (item) {
+      const itemParent = item.closest('.tagshot__list');
+      itemParent.classList.remove('scrollbar-off');
       item.classList.remove('shot-item--active');
     }
   }

@@ -1571,6 +1571,9 @@ a.logo__link {
   background-color: #fff;
   width: 100%
 }
+.tagshot__list-wrapper {
+  position: relative
+}
 .tagshot__list {
   display: grid;
   align-content: flex-start;
@@ -1578,7 +1581,10 @@ a.logo__link {
   height: calc(var(--tagshot-list-h) - 20px);
   overflow-y: auto;
   overflow-x: hidden;
-  position: relative
+  padding-right: .5rem
+}
+.tagshot__list.scrollbar-off {
+  overflow-y: hidden
 }
 .tagshot__item {
   display: grid;
@@ -2462,6 +2468,9 @@ a.logo__link {
 .product-option__size li.none-buy:hover .size-not-have-block {
   opacity: 1!important;
   visibility: visible
+}
+.product-option__size li.active {
+  font-weight: 700
 }
 .product-option__size-table {
   cursor: pointer
@@ -3631,9 +3640,9 @@ body::after {
 }
 @media (min-width:47.99875em) and (min-width:109.375em) {
   .videolook__grid {
-    -webkit-column-gap: 2.25rem;
-    -moz-column-gap: 2.25rem;
-    column-gap: 2.25rem
+    -webkit-column-gap: 1.5rem;
+    -moz-column-gap: 1.5rem;
+    column-gap: 1.5rem
   }
 }
 @media screen and (min-width:61.99875em) {
@@ -5155,6 +5164,12 @@ body::after {
   .product-details__button:not(:first-child) {
     border-left: .0625rem solid rgba(39,41,48,.1)
   }
+  .product-details__button span {
+    padding-inline: .5rem;
+    flex: 1;
+    text-align: left;
+    font-weight: 700
+  }
   .product-details__button._active svg {
     -webkit-transform: rotate(90deg);
     transform: rotate(90deg)
@@ -6001,16 +6016,16 @@ body::after {
 }
 @media (min-width:47.99875em) and (min-width:62em) and (max-width:109.375em) {
   .videolook__grid {
-    -webkit-column-gap: clamp(1rem ,-.635883905rem + 2.6385224274vw ,2.25rem);
-    -moz-column-gap: clamp(1rem ,-.635883905rem + 2.6385224274vw ,2.25rem);
-    column-gap: clamp(1rem ,-.635883905rem + 2.6385224274vw ,2.25rem)
+    -webkit-column-gap: clamp(.5rem ,-.808707124rem + 2.110817942vw ,1.5rem);
+    -moz-column-gap: clamp(.5rem ,-.808707124rem + 2.110817942vw ,1.5rem);
+    column-gap: clamp(.5rem ,-.808707124rem + 2.110817942vw ,1.5rem)
   }
 }
 @media (min-width:47.99875em) and (max-width:62em) {
   .videolook__grid {
-    -webkit-column-gap: 1rem;
-    -moz-column-gap: 1rem;
-    column-gap: 1rem
+    -webkit-column-gap: .5rem;
+    -moz-column-gap: .5rem;
+    column-gap: .5rem
   }
 }
 @media (any-hover:hover) {

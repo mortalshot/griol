@@ -1537,6 +1537,8 @@
         let activeButton = null;
         let activeTarget = null;
         let isLocked = false;
+        const sizeButton = document.querySelector('.product-details__button[data-link="product-size"]');
+        const sizeButtonIcon = sizeButton ? sizeButton.querySelector("svg")?.outerHTML : "";
         const closeActive = (fullClose = true) => {
             if (activeButton) activeButton.classList.remove("_active");
             if (activeTarget) activeTarget.classList.remove("_active");
@@ -1574,6 +1576,19 @@
         document.addEventListener("click", (e => {
             const closeBtn = e.target.closest(".product-option__close");
             if (closeBtn) closeActive();
+        }));
+        document.addEventListener("click", (e => {
+            const sizeItem = e.target.closest(".sizeSelector");
+            if (!sizeItem) return;
+            const sizeValue = sizeItem.dataset.sizename || sizeItem.querySelector("span")?.textContent.trim() || sizeItem.textContent.trim();
+            if (!sizeButton) return;
+            sizeButton.classList.add("_active");
+            sizeButton.innerHTML = `\n    Размер <span>${sizeValue}</span>\n    ${sizeButtonIcon}\n  `;
+            sizeButton.dataset.value = sizeValue;
+            const list = sizeItem.closest("ul");
+            if (list) list.querySelectorAll(".sizeSelector.active").forEach((el => el.classList.remove("active")));
+            sizeItem.classList.add("active");
+            closeActive();
         }));
     }
     initProductDetailsToggle();
@@ -1759,6 +1774,8 @@
             if (interactive) return;
             const item = front.closest(".shot-item");
             if (item) {
+                const itemParent = item.closest(".tagshot__list");
+                itemParent.classList.add("scrollbar-off");
                 item.classList.add("shot-item--active");
                 const gallery = item.querySelector(".shot-slider__gallery");
                 refreshSlick(gallery);
@@ -1768,7 +1785,11 @@
         const back = e.target.closest(".shot-item__back");
         if (back) {
             const item = back.closest(".shot-item");
-            if (item) item.classList.remove("shot-item--active");
+            if (item) {
+                const itemParent = item.closest(".tagshot__list");
+                itemParent.classList.remove("scrollbar-off");
+                item.classList.remove("shot-item--active");
+            }
         }
     }));
     window["FLS"] = true;
