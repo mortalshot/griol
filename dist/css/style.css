@@ -2932,6 +2932,9 @@ a.logo__link {
   visibility: visible;
   pointer-events: all
 }
+.shot-item__details > *:not(:last-child) {
+  margin-bottom: 1.5rem
+}
 .shot-item__back {
   width: 100%;
   display: flex;
@@ -2943,8 +2946,27 @@ a.logo__link {
   flex: 0 0 24px;
   rotate: 180deg
 }
-.shot-item__description:not(:first-child) {
-  margin-top: 24px
+.shot-item__options {
+  display: grid;
+  align-content: flex-start
+}
+.shot-item__option .product-option__head {
+  display: flex!important;
+  padding-top: 0!important;
+  padding-inline: 0!important;
+  border: 0!important
+}
+.shot-item__option .product-option__close {
+  display: none!important
+}
+.shot-item__actions {
+  text-transform: uppercase
+}
+.shot-item__actions a {
+  width: 100%
+}
+.shot-item__actions .single-product__cart {
+  display: block!important
 }
 .shot-slider {
   position: relative
@@ -4268,6 +4290,9 @@ body::after {
   .search-section__grid {
     grid-template-columns: 19.5625rem 1fr
   }
+  .shot-item__options {
+    row-gap: 2rem
+  }
 }
 @media (min-width:120em) {
   .hero .slider-arrows {
@@ -4343,6 +4368,9 @@ body::after {
   }
   .product-option__heading:not(:last-child) {
     margin-bottom: 1rem
+  }
+  .shot-item__options {
+    row-gap: 1.25rem
   }
 }
 @media (max-width:48em) {
@@ -5019,9 +5047,6 @@ body::after {
   .videolook__media {
     height: var(--videolook-media-h)
   }
-  .shot-item__details {
-    padding-inline: 1.25rem
-  }
 }
 @media (max-width:35.93625em) {
   .footer__top {
@@ -5271,6 +5296,27 @@ body::after {
   .product-option__size-table::before {
     content: "";
     display: none
+  }
+  .shot-item__option {
+    position: initial!important;
+    opacity: 1!important;
+    visibility: initial!important;
+    pointer-events: all!important;
+    -webkit-transform: initial!important;
+    transform: initial!important
+  }
+  .shot-item__option::before {
+    display: none
+  }
+  .shot-item__option .product-option__colors {
+    padding: 0!important;
+    margin: 0!important
+  }
+  .shot-item__option .product-option__size-table {
+    padding-inline: 0
+  }
+  .shot-item__option .product-option__size li {
+    padding-inline: 0
   }
 }
 @media (max-width:35.93625em) and (max-width:22.5em) {
@@ -5732,6 +5778,9 @@ body::after {
   }
   .product-option__heading:not(:last-child) {
     margin-bottom: clamp(1rem ,.4464285714rem + .8928571429vw ,1.25rem)
+  }
+  .shot-item__options {
+    row-gap: clamp(1.25rem ,-.4107142857rem + 2.6785714286vw ,2rem)
   }
 }
 @media (min-width:47.99875em) and (max-width:61.99875em) {
