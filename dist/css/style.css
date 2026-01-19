@@ -2983,6 +2983,13 @@ a.logo__link {
 .video-modal .videolook__fullscreen {
   display: none!important
 }
+html {
+  opacity: 0;
+  transition: .3s ease opacity 0s
+}
+html.loaded {
+  opacity: 1
+}
 body,
 html {
   font-family: TildaSans

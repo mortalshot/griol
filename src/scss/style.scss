@@ -69,6 +69,15 @@ $mobileSmall: toEm(479.98); // Телефоны S
 
 @import "main";
 
+html {
+	opacity: 0;
+	transition: $transition ease opacity 0s;
+	
+	&.loaded {
+		opacity: 1;
+	}
+}
+
 html,
 body {
 	font-family: $fontFamily;
