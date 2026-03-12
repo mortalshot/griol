@@ -803,15 +803,49 @@ function initProductDetailsToggle() {
   let activeTarget = null;
   let isLocked = false;
 
-  const sizeButton = document.querySelector('.product-details__button[data-link="product-size"]');
-  const sizeButtonIcon = sizeButton ? sizeButton.querySelector('svg')?.outerHTML : '';
+  const getScope = (element) =>
+    element.closest('.single-product') ||
+    element.closest('.shot-item__details') ||
+    document;
+
+  const getTargetByButton = (button) => {
+    const targetId = button.dataset.link;
+    if (!targetId) return null;
+
+    const scope = getScope(button);
+    return scope.querySelector(`#${targetId}`) || document.getElementById(targetId);
+  };
+
+  const getButtonByTarget = (target) => {
+    if (!target?.id) return null;
+
+    const scope = getScope(target);
+    return scope.querySelector(`.product-details__button[data-link="${target.id}"]`);
+  };
+
+  const getButtonBaseLabel = (button) => {
+    if (!button) return '';
+
+    if (!button.dataset.baseLabel) {
+      const textNode = Array.from(button.childNodes).find(
+        node => node.nodeType === Node.TEXT_NODE && node.textContent.trim()
+      );
+      button.dataset.baseLabel = textNode ? textNode.textContent.trim() : '';
+    }
+
+    return button.dataset.baseLabel;
+  };
 
   const closeActive = (fullClose = true) => {
+    const activeScope = activeTarget?.closest('.shot-item__details');
+
     if (activeButton) activeButton.classList.remove('_active');
     if (activeTarget) activeTarget.classList.remove('_active');
+    if (activeScope) activeScope.classList.remove('_option-open');
 
     if (fullClose) {
       html.classList.remove('_details-open');
+      html.classList.remove('_shot-option-open');
       if (bodyLockStatus) bodyUnlock();
     }
 
@@ -819,9 +853,8 @@ function initProductDetailsToggle() {
     activeTarget = null;
   };
 
-  buttons.forEach(button => {
-    const targetId = button.dataset.link;
-    const target = document.getElementById(targetId);
+  buttons.forEach((button) => {
+    const target = getTargetByButton(button);
     if (!target) return;
 
     button.addEventListener('click', (e) => {
@@ -833,13 +866,19 @@ function initProductDetailsToggle() {
       const isSame = activeButton === button;
 
       if (isSame) {
-        closeActive(); // закрываем с unlock
+        closeActive();
       } else {
-        closeActive(false); // закрываем без unlock
+        closeActive(false);
         button.classList.add('_active');
         target.classList.add('_active');
         html.classList.add('_details-open');
         if (bodyLockStatus) bodyLock();
+
+        const targetScope = target.closest('.shot-item__details');
+        if (targetScope) {
+          targetScope.classList.add('_option-open');
+          html.classList.add('_shot-option-open');
+        }
 
         activeButton = button;
         activeTarget = target;
@@ -847,18 +886,12 @@ function initProductDetailsToggle() {
     });
   });
 
-  // Клик вне области
   document.addEventListener('click', (e) => {
-    if (
-      activeTarget &&
-      !activeTarget.contains(e.target) &&
-      !activeButton?.contains(e.target)
-    ) {
+    if (activeTarget && !activeTarget.contains(e.target) && !activeButton?.contains(e.target)) {
       closeActive();
     }
   });
 
-  // Кнопка .product-option__close
   document.addEventListener('click', (e) => {
     const closeBtn = e.target.closest('.product-option__close');
     if (closeBtn) {
@@ -866,29 +899,56 @@ function initProductDetailsToggle() {
     }
   });
 
-  // Выбор размера
+  document.addEventListener('click', (e) => {
+    const colorItem = e.target.closest('.colorSelector');
+    if (!colorItem) return;
+
+    const option = colorItem.closest('.product-option');
+    const button = getButtonByTarget(option);
+    const previewImg = colorItem.querySelector('img');
+    const buttonImg = button?.querySelector('img');
+
+    if (button && buttonImg && previewImg) {
+      buttonImg.src = previewImg.getAttribute('src') || '';
+      buttonImg.alt = previewImg.getAttribute('alt') || '';
+    }
+
+    const list = colorItem.closest('ul');
+    if (list) {
+      list.querySelectorAll('.product-color.active').forEach((el) => el.classList.remove('active'));
+    }
+
+    const colorLi = colorItem.closest('.product-color');
+    if (colorLi) {
+      colorLi.classList.add('active');
+    }
+
+    closeActive();
+  });
+
   document.addEventListener('click', (e) => {
     const sizeItem = e.target.closest('.sizeSelector');
     if (!sizeItem) return;
 
-    const sizeValue =
-      sizeItem.dataset.sizename ||
-      sizeItem.querySelector('span')?.textContent.trim() ||
-      sizeItem.textContent.trim();
+    const option = sizeItem.closest('.product-option');
+    const sizeButton = getButtonByTarget(option);
 
-    if (!sizeButton) return;
+    if (sizeButton) {
+      const sizeValue =
+        sizeItem.dataset.sizename ||
+        sizeItem.querySelector('span')?.textContent.trim() ||
+        sizeItem.textContent.trim();
+      const sizeButtonIcon = sizeButton.querySelector('svg')?.outerHTML || '';
+      const sizeButtonLabel = getButtonBaseLabel(sizeButton) || '������';
 
-    sizeButton.classList.add('_active');
-    sizeButton.innerHTML = `
-    Размер <span>${sizeValue}</span>
-    ${sizeButtonIcon}
-  `;
-
-    sizeButton.dataset.value = sizeValue;
+      sizeButton.classList.add('_active');
+      sizeButton.innerHTML = `${sizeButtonLabel} <span>${sizeValue}</span>${sizeButtonIcon}`;
+      sizeButton.dataset.value = sizeValue;
+    }
 
     const list = sizeItem.closest('ul');
     if (list) {
-      list.querySelectorAll('.sizeSelector.active').forEach(el => el.classList.remove('active'));
+      list.querySelectorAll('.sizeSelector.active').forEach((el) => el.classList.remove('active'));
     }
     sizeItem.classList.add('active');
 
@@ -936,23 +996,26 @@ function watchProductHeadingStickyState() {
 
 // Отслеживаем отлипание product-details
 function watchStickyEnd() {
-  const stickyBlock = document.querySelector('.product-details'); // Тот, кому добавим класс
-  const stickyOptions = document.querySelector('.single-product__options'); // Тот, кому добавим класс
-  const trigger = document.querySelector('.sticky-trigger');
-
-  if (!stickyBlock || !trigger) return;
-
-  const observer = new IntersectionObserver(([entry]) => {
-    if (entry.isIntersecting) {
-      stickyBlock.classList.add('_is-not-stuck');
-      stickyOptions.classList.add('_is-not-stuck');
-    } else {
-      stickyBlock.classList.remove('_is-not-stuck');
-      stickyOptions.classList.remove('_is-not-stuck');
-    }
+  const triggers = document.querySelectorAll('.sticky-trigger');
+  if (!triggers.length) return;
+  triggers.forEach((trigger) => {
+    if (trigger.dataset.stickyObserved === 'true') return;
+    const scope = trigger.parentElement;
+    const stickyBlock = scope?.querySelector('.product-details');
+    const stickyOptions = scope?.querySelector('.single-product__options, .shot-item__options');
+    if (!stickyBlock || !stickyOptions) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        stickyBlock.classList.add('_is-not-stuck');
+        stickyOptions.classList.add('_is-not-stuck');
+      } else {
+        stickyBlock.classList.remove('_is-not-stuck');
+        stickyOptions.classList.remove('_is-not-stuck');
+      }
+    });
+    observer.observe(trigger);
+    trigger.dataset.stickyObserved = 'true';
   });
-
-  observer.observe(trigger);
 }
 
 function initMobileOnlyProductWatchers() {
@@ -1209,3 +1272,10 @@ document.addEventListener('click', (e) => {
     }
   }
 });
+
+
+
+
+
+
+

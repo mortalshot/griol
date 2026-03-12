@@ -2366,6 +2366,22 @@ a.logo__link {
 ._details-open .single-product__options._is-not-stuck {
   z-index: 152
 }
+._details-open .shot-item__details-mobile {
+  z-index: 154
+}
+._details-open .shot-item__details-mobile._is-not-stuck {
+  z-index: 1
+}
+._details-open .shot-item__options {
+  z-index: 155
+}
+._details-open .shot-item__options._is-not-stuck {
+  z-index: 156
+}
+._shot-option-open body::after {
+  opacity: 0;
+  pointer-events: none
+}
 .scrolled-past-name + .single-product__scheme .single-product__gallery {
   z-index: -1;
   opacity: 0
@@ -2837,6 +2853,21 @@ a.logo__link {
 .videolook__media video::-webkit-media-controls-fullscreen-button {
   display: none
 }
+.videolook__promo {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 2;
+  min-width: 8.375rem;
+  min-height: 2.375rem;
+  padding: .75rem 1.875rem;
+  background-color: #000;
+  font-size: .75rem;
+  line-height: 1.2142857143;
+  text-transform: uppercase;
+  text-align: center;
+  color: #fff
+}
 .videolook__text {
   max-width: 49.875rem
 }
@@ -2932,6 +2963,19 @@ a.logo__link {
   visibility: visible;
   pointer-events: all
 }
+.shot-item__details::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0,0,0,.35);
+  opacity: 0;
+  pointer-events: none;
+  transition: .3s ease opacity 0s;
+  z-index: 1
+}
+.shot-item__details._option-open::before {
+  opacity: 1
+}
 .shot-item__details > *:not(:last-child) {
   margin-bottom: 1.5rem
 }
@@ -2949,15 +2993,6 @@ a.logo__link {
 .shot-item__options {
   display: grid;
   align-content: flex-start
-}
-.shot-item__option .product-option__head {
-  display: flex!important;
-  padding-top: 0!important;
-  padding-inline: 0!important;
-  border: 0!important
-}
-.shot-item__option .product-option__close {
-  display: none!important
 }
 .shot-item__actions {
   text-transform: uppercase
@@ -3306,6 +3341,15 @@ body::after {
   }
   .product-option__size-table:not(:first-child) {
     margin-top: .9375rem
+  }
+  .shot-item__option .product-option__head {
+    display: flex!important;
+    padding-top: 0!important;
+    padding-inline: 0!important;
+    border: 0!important
+  }
+  .shot-item__option .product-option__close {
+    display: none!important
   }
   body,
   html {
@@ -5010,6 +5054,9 @@ body::after {
   .stories__slider .story-card__body {
     padding: .5rem .625rem
   }
+  .videolook__grid {
+    position: relative
+  }
   .videolook__tagshot .videolook__toggle {
     width: initial;
     height: initial;
@@ -5046,6 +5093,11 @@ body::after {
   }
   .videolook__media {
     height: var(--videolook-media-h)
+  }
+}
+@media (max-width:47.99875em) and (max-width:22.5em) {
+  .videolook__grid {
+    margin-inline: -.625rem
   }
 }
 @media (max-width:35.93625em) {
@@ -5297,26 +5349,17 @@ body::after {
     content: "";
     display: none
   }
+  .shot-item__details-mobile {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 4;
+    background-color: #fff;
+    margin-bottom: 0!important
+  }
   .shot-item__option {
-    position: initial!important;
-    opacity: 1!important;
-    visibility: initial!important;
-    pointer-events: all!important;
-    -webkit-transform: initial!important;
-    transform: initial!important
-  }
-  .shot-item__option::before {
-    display: none
-  }
-  .shot-item__option .product-option__colors {
-    padding: 0!important;
-    margin: 0!important
-  }
-  .shot-item__option .product-option__size-table {
-    padding-inline: 0
-  }
-  .shot-item__option .product-option__size li {
-    padding-inline: 0
+    z-index: 5
   }
 }
 @media (max-width:35.93625em) and (max-width:22.5em) {
@@ -6084,6 +6127,16 @@ body::after {
     column-gap: .5rem
   }
 }
+@media (max-width:47.99875em) and (min-width:109.375em) {
+  .videolook__grid {
+    margin-inline: -1.25rem
+  }
+}
+@media (max-width:47.99875em) and (min-width:22.5em) and (max-width:109.375em) {
+  .videolook__grid {
+    margin-inline: clamp(-1.25rem ,-.4631294964rem + -.7194244604vw ,-.625rem)
+  }
+}
 @media (any-hover:hover) {
   .btn:hover svg {
     -webkit-animation: shake-horizontal .7s cubic-bezier(.25,.1,.25,1) both;
@@ -6388,6 +6441,12 @@ body::after {
   .story-card__title a:hover {
     -webkit-text-decoration: underline from-font;
     text-decoration: underline from-font
+  }
+  .videolook__promo {
+    transition: .3s ease opacity 0s
+  }
+  .videolook__promo:hover {
+    opacity: .85
   }
   .shot-item__wishlist-btn:hover svg {
     -webkit-animation: shake-horizontal .7s cubic-bezier(.25,.1,.25,1) both;

@@ -2182,6 +2182,31 @@
       z-index: 152;
     }
   }
+
+  .shot-item__details-mobile {
+    z-index: 154;
+
+    &._is-not-stuck {
+      z-index: 1;
+    }
+  }
+
+  .shot-item__options {
+    z-index: 155;
+
+    &._is-not-stuck {
+      z-index: 156;
+    }
+  }
+}
+
+._shot-option-open {
+  body {
+    &::after {
+      opacity: 0;
+      pointer-events: none;
+    }
+  }
 }
 
 .scrolled-past-name {
@@ -3180,6 +3205,10 @@
         display: none;
       }
     }
+    @media (max-width: $mobile) {
+      position: relative;
+      @include adaptiveValue("margin-inline", -20, -10, 0, 1750, 360);
+    }
 
     &:not(:last-child) {
       margin-bottom: toRem(24);
@@ -3290,6 +3319,31 @@
 
       &::-webkit-media-controls-fullscreen-button {
         display: none;
+      }
+    }
+  }
+
+  // .videolook__promo
+  &__promo {
+    position: absolute;
+    top: toRem(16);
+    right: toRem(16);
+    z-index: 2;
+    min-width: toRem(134);
+    min-height: toRem(38);
+    padding: toRem(12) toRem(30);
+    background-color: $mainColor;
+    font-size: toRem(12);
+    line-height: math.div(17, 14);
+    text-transform: uppercase;
+    text-align: center;
+    color: $White;
+
+    @media (any-hover: hover) {
+      transition: $transition ease opacity 0s;
+
+      &:hover {
+        opacity: 0.85;
       }
     }
   }
@@ -3454,11 +3508,27 @@
     pointer-events: none;
     transition: 0.5s ease all 0s;
     min-width: 0;
-
     .shot-item--active & {
       opacity: 1;
       visibility: visible;
       pointer-events: all;
+    }
+
+    &::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-color: rgba($color: #000000, $alpha: 0.35);
+      opacity: 0;
+      pointer-events: none;
+      transition: $transition ease opacity 0s;
+      z-index: 1;
+    }
+
+    &._option-open {
+      &::before {
+        opacity: 1;
+      }
     }
 
     & > * {
@@ -3493,42 +3563,36 @@
     @include adaptiveValue("row-gap", 32, 20, 0, 1440, 992);
   }
 
+  // .shot-item__details-mobile
+  &__details-mobile {
+    @media (max-width: $mobileM) {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 4;
+      background-color: $White;
+      margin-bottom: 0 !important; 
+    }
+  }
+
   // .shot-item__option
   &__option {
     @media (max-width: $mobileM) {
-      position: initial !important;
-      opacity: 1 !important;
-      visibility: initial !important;
-      pointer-events: all !important;
-      transform: initial !important;
-      
-      &::before {
-        display: none;
-      }
-
-      .product-option__colors {
-        padding: 0 !important;
-        margin: 0 !important;
-      }
-
-      .product-option__size-table {
-        padding-inline: 0;
-      }
-
-      .product-option__size li {
-        padding-inline: 0;
-      }
+      z-index: 5;
     }
 
-    .product-option__head {
-      display: flex !important;
-      padding-top: 0 !important;
-      padding-inline: 0 !important;
-      border: 0 !important;
-    }
-    
-    .product-option__close {
-      display: none !important;
+    @media (min-width: $mobileM) {
+      .product-option__head {
+        display: flex !important;
+        padding-top: 0 !important;
+        padding-inline: 0 !important;
+        border: 0 !important;
+      }
+
+      .product-option__close {
+        display: none !important;
+      }
     }
   }
 
