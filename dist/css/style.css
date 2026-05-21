@@ -1423,6 +1423,37 @@ a.logo__link {
   opacity: 1;
   visibility: visible
 }
+.hero__slider-wrapper,
+.preview-slider,
+.shot-slider__gallery,
+.stories__slider,
+.stylist__slider,
+.widget-category__slider,
+.widget-featured__slider,
+.widget-products__slider {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .2s ease
+}
+.hero__slider-wrapper._slider-ready,
+.hero__slider-wrapper.slick-initialized,
+.preview-slider._slider-ready,
+.preview-slider.slick-initialized,
+.shot-slider__gallery._slider-ready,
+.shot-slider__gallery.slick-initialized,
+.stories__slider._slider-ready,
+.stories__slider.slick-initialized,
+.stylist__slider._slider-ready,
+.stylist__slider.slick-initialized,
+.widget-category__slider._slider-ready,
+.widget-category__slider.slick-initialized,
+.widget-featured__slider._slider-ready,
+.widget-featured__slider.slick-initialized,
+.widget-products__slider._slider-ready,
+.widget-products__slider.slick-initialized {
+  opacity: 1;
+  visibility: visible
+}
 .lookbook {
   position: relative
 }
@@ -3039,13 +3070,6 @@ a.logo__link {
 }
 .video-modal .videolook__fullscreen {
   display: none!important
-}
-html {
-  opacity: 0;
-  transition: .3s ease opacity 0s
-}
-html.loaded {
-  opacity: 1
 }
 body,
 html {
@@ -5117,6 +5141,16 @@ body::after {
   }
   .footer__info {
     text-align: center
+  }
+  .single-product__gallery {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .2s ease
+  }
+  .single-product__gallery._slider-ready,
+  .single-product__gallery.slick-initialized {
+    opacity: 1;
+    visibility: visible
   }
   .lookbook__media img,
   .lookbook__media video {

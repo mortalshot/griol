@@ -8,6 +8,39 @@
   }
 }
 
+.hero__slider-wrapper,
+.stylist__slider,
+.widget-products__slider,
+.widget-category__slider,
+.widget-featured__slider,
+.stories__slider,
+.shot-slider__gallery,
+.preview-slider {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease;
+
+  &._slider-ready,
+  &.slick-initialized {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+@media (max-width: $mobileM) {
+  .single-product__gallery {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease;
+
+    &._slider-ready,
+    &.slick-initialized {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+}
+
 // .lookbook   ====================================================================================================
 .lookbook {
   position: relative;

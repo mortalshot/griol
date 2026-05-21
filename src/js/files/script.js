@@ -327,7 +327,231 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Слайдеры
+// Optional lazy/adaptive video loading.
+// Works only for video[data-fls-adaptive-video]; legacy source[src] markup keeps the old behavior.
+function initAdaptiveVideos() {
+  const videos = document.querySelectorAll('video[data-fls-adaptive-video]');
+  if (!videos.length) return;
+
+  const loadedAttribute = 'data-fls-adaptive-video-loaded';
+  const visibleAttribute = 'data-fls-adaptive-video-visible';
+  const sliderActiveAttribute = 'data-fls-slider-video-active';
+
+  const isVideoInSlider = (video) => Boolean(video.closest('.slick-slide'));
+  const canLoadVideo = (video) => !isVideoInSlider(video) || video.hasAttribute(sliderActiveAttribute);
+
+  const getMatchedSource = (video) => {
+    return [...video.querySelectorAll('source')].find((source) => {
+      const media = source.getAttribute('media');
+      return !media || window.matchMedia(media).matches;
+    }) || null;
+  };
+
+  const getSourceSrc = (source) => source?.dataset.src || source?.getAttribute('src') || '';
+
+  const syncVideoPoster = (video, source = getMatchedSource(video)) => {
+    const poster = source?.dataset.poster || video.dataset.poster || video.getAttribute('poster') || '';
+
+    if (poster && video.getAttribute('poster') !== poster) {
+      video.setAttribute('poster', poster);
+    }
+  };
+
+  const syncVideoSources = (video) => {
+    const matchedSource = getMatchedSource(video);
+    const matchedSrc = getSourceSrc(matchedSource);
+    let shouldLoad = false;
+
+    if (!matchedSource || !matchedSrc) return false;
+
+    video.querySelectorAll('source').forEach((source) => {
+      const sourceSrc = getSourceSrc(source);
+
+      if (source === matchedSource) {
+        if (source.getAttribute('src') !== matchedSrc) {
+          source.setAttribute('src', matchedSrc);
+          shouldLoad = true;
+        }
+      } else if (source.dataset.src && source.hasAttribute('src')) {
+        source.removeAttribute('src');
+        shouldLoad = true;
+      } else if (!source.dataset.src && sourceSrc && sourceSrc !== matchedSrc && source.hasAttribute('src')) {
+        source.removeAttribute('src');
+        shouldLoad = true;
+      }
+    });
+
+    syncVideoPoster(video, matchedSource);
+    return shouldLoad;
+  };
+
+  const playVideo = (video) => {
+    if (!video.autoplay && !video.hasAttribute('data-fls-adaptive-video-play')) return;
+    video.play().catch(() => { });
+  };
+
+  const loadAdaptiveVideo = (video, forcePlay = false) => {
+    if (!canLoadVideo(video)) return;
+
+    const shouldLoad = syncVideoSources(video);
+
+    if (shouldLoad || !video.hasAttribute(loadedAttribute)) {
+      video.load();
+    }
+
+    video.setAttribute(loadedAttribute, '');
+
+    if (forcePlay || video.hasAttribute(visibleAttribute)) {
+      playVideo(video);
+    }
+  };
+
+  const handleMediaChange = (video) => {
+    const wasLoaded = video.hasAttribute(loadedAttribute);
+    const wasPlaying = !video.paused && !video.ended;
+    const shouldLoad = syncVideoSources(video);
+
+    if (wasLoaded && shouldLoad) {
+      video.load();
+
+      if (wasPlaying || video.hasAttribute(visibleAttribute)) {
+        playVideo(video);
+      }
+    }
+  };
+
+  const watchVideoSources = (video) => {
+    const mediaQueries = [
+      ...new Set(
+        [...video.querySelectorAll('source[media]')]
+          .map((source) => source.getAttribute('media'))
+          .filter(Boolean)
+      ),
+    ];
+
+    mediaQueries.forEach((media) => {
+      const mediaQuery = window.matchMedia(media);
+      const handleChange = () => handleMediaChange(video);
+
+      if (mediaQuery.addEventListener) {
+        mediaQuery.addEventListener('change', handleChange);
+      } else {
+        mediaQuery.addListener(handleChange);
+      }
+    });
+  };
+
+  const watchForcedLoad = (video) => {
+    video.addEventListener('fls-adaptive-video-load', (event) => {
+      loadAdaptiveVideo(video, Boolean(event.detail?.play));
+    });
+  };
+
+  const watchSliderVideoState = (video) => {
+    if (!isVideoInSlider(video) || !('MutationObserver' in window)) return;
+
+    const observer = new MutationObserver(() => {
+      if (video.hasAttribute(visibleAttribute)) {
+        loadAdaptiveVideo(video);
+      }
+    });
+
+    observer.observe(video, {
+      attributes: true,
+      attributeFilter: [sliderActiveAttribute],
+    });
+  };
+
+  const observeVideo = (video) => {
+    syncVideoPoster(video);
+
+    if (!('IntersectionObserver' in window)) {
+      video.setAttribute(visibleAttribute, '');
+      loadAdaptiveVideo(video);
+      return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          video.setAttribute(visibleAttribute, '');
+          loadAdaptiveVideo(video);
+        } else {
+          video.removeAttribute(visibleAttribute);
+
+          if (video.hasAttribute('data-fls-adaptive-video-pause')) {
+            video.pause();
+          }
+        }
+      });
+    }, {
+      rootMargin: '300px 0px',
+      threshold: 0.01,
+    });
+
+    observer.observe(video);
+  };
+
+  videos.forEach((video) => {
+    observeVideo(video);
+    watchForcedLoad(video);
+    watchSliderVideoState(video);
+    watchVideoSources(video);
+
+    if (video.hasAttribute(sliderActiveAttribute)) {
+      loadAdaptiveVideo(video, true);
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', initAdaptiveVideos);
 function initSliders() {
+  function markSlickSliderReady(slider, block) {
+    slider.classList.add('_slider-ready');
+    block?.classList.add('_slider-ready');
+  }
+
+  function unmarkSlickSliderReady(slider, block) {
+    slider.classList.remove('_slider-ready');
+    block?.classList.remove('_slider-ready');
+  }
+
+  function clearSlickSliderVideoState(slick) {
+    if (!slick?.$slides) return;
+
+    slick.$slides.each(function () {
+      this.querySelectorAll('video[data-fls-adaptive-video]').forEach((video) => {
+        video.removeAttribute('data-fls-slider-video-active');
+        video.pause();
+        video.currentTime = 0;
+      });
+    });
+  }
+
+  function updateSlickSliderVideoState(slick) {
+    if (!slick?.$slides) return;
+
+    const firstActive = slick.currentSlide;
+    const lastActive = firstActive + Math.ceil(slick.options.slidesToShow) - 1;
+
+    slick.$slides.each(function (index) {
+      const isActive = index >= firstActive && index <= lastActive;
+
+      this.querySelectorAll('video[data-fls-adaptive-video]').forEach((video) => {
+        if (isActive) {
+          video.setAttribute('data-fls-slider-video-active', '');
+          video.dispatchEvent(new CustomEvent('fls-adaptive-video-load', {
+            detail: { play: true },
+          }));
+        } else {
+          video.removeAttribute('data-fls-slider-video-active');
+          video.pause();
+          video.currentTime = 0;
+        }
+      });
+    });
+  }
+
   function initCustomSlickSlider(options) {
     const {
       rootSelector,
@@ -377,15 +601,28 @@ function initSliders() {
       const setupSlider = () => {
         if (enableBelow && window.innerWidth >= enableBelow) {
           if (isInitialized) {
+            $(slider).slick('getSlick') && clearSlickSliderVideoState($(slider).slick('getSlick'));
             $(slider).slick('unslick');
+            unmarkSlickSliderReady(slider, block);
             isInitialized = false;
           }
           return;
         }
 
         if (!isInitialized) {
-          $(slider).on('init reInit afterChange', function (e, slick) {
+          $(slider).on('init', function (e, slick) {
+            markSlickSliderReady(slider, block);
+            updateSlickSliderVideoState(slick);
+            setTimeout(() => updateArrows(slick), 0);
+          });
+
+          $(slider).on('beforeChange', function (e, slick) {
+            clearSlickSliderVideoState(slick);
+          });
+
+          $(slider).on('reInit afterChange', function (e, slick) {
             updateArrows(slick);
+            updateSlickSliderVideoState(slick);
           });
 
           $(slider).slick({
@@ -399,9 +636,6 @@ function initSliders() {
             ...slickSettings
           });
 
-          $(slider).on('init', function (e, slick) {
-            setTimeout(() => updateArrows(slick), 0);
-          });
 
           prevBtn?.addEventListener('click', () => {
             $(slider).slick('slickPrev');
@@ -637,6 +871,10 @@ function initInnerPreviewSliders() {
 
   previewSliders.forEach(slider => {
     if ($(slider).hasClass('slick-initialized')) return;
+
+    $(slider).on('init', function () {
+      slider.classList.add('_slider-ready');
+    });
 
     $(slider).slick({
       slidesToShow: 1,
